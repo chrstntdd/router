@@ -1,5 +1,5 @@
 import React from 'react'
-import invariant from 'invariant'
+import invariant from 'tiny-invariant'
 import { unstable_scheduleCallback as defer } from 'scheduler'
 
 /* CLONE/FORK OF https://github.com/reach/router */

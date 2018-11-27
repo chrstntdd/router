@@ -35,7 +35,7 @@
     ]
   },
   "dependencies": {
-    "typescript": "^3.1.6"
+    "tiny-invariant": "^1.0.3"
   },
   "peerDependencies": {
     "react": "^16.7.0-alpha.2",
@@ -48,6 +48,7 @@
     "@types/node": "^10.12.9",
     "@types/react": "^16.7.6",
     "@types/react-dom": "^16.0.9",
+    "@types/scheduler": "^0.10.0",
     "awesome-typescript-loader": "^5.2.1",
     "babel-jest": "^23.6.0",
     "babel-loader": "^8.0.4",
@@ -59,7 +60,6 @@
     "fuse-box": "^3.6.0",
     "html-webpack-plugin": "^3.2.0",
     "husky": "^1.2.0",
-    "invariant": "^2.2.4",
     "jest": "^23.6.0",
     "jest-dom": "^2.1.1",
     "jest-watch-typeahead": "^0.2.0",
@@ -76,6 +76,7 @@
     "rollup-plugin-uglify": "^6.0.0",
     "source-map-loader": "^0.2.4",
     "ts-jest": "23.1.4",
+    "typescript": "^3.1.6",
     "webpack": "^4.26.1",
     "webpack-cli": "^3.1.2",
     "webpack-dev-server": "^3.1.10"
