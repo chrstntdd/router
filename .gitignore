@@ -1,0 +1,16 @@
+# Dependencies
+/node_modules
+
+# Output
+/build
+/dist
+
+# Misc
+/.fusebox
+/coverage
+/.docz
+/.env
+/.awcache
+/.rts2_cache_cjs
+/.rts2_cache_es
+/vendor
