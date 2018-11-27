@@ -1,5 +1,5 @@
-import React from 'react'
-import invariant from 'invariant'
+import * as React from 'react'
+import invariant from 'tiny-invariant'
 
 const startsWith = (string: string, search: string): boolean =>
   string.substr(0, search.length) === search

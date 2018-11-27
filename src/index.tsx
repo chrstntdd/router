@@ -1,4 +1,4 @@
-import React from 'react'
+import * as React from 'react'
 import invariant from 'tiny-invariant'
 import { unstable_scheduleCallback as defer } from 'scheduler'
 
