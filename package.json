@@ -17,11 +17,11 @@
     "test": "./node_modules/.bin/jest --coverage",
     "test-auto": "./node_modules/.bin/jest --watch --verbose false",
     "test-fast": "./node_modules/.bin/jest --silent",
-    "build": "rm -rf dist && microbundle -o dist/index.js -f es,cjs --external react,scheduler",
+    "build": "microbundle --external react,scheduler",
     "rollup": "rm -rf dist && ./node_modules/.bin/rollup -c rollup.config.js",
     "use": "./node_modules/.bin/webpack-dev-server --quiet --color -d --config webpack.config.js",
     "use-prod": "./node_modules/.bin/webpack -p --color ---config webpack.config.js",
-    "pub:check": "yarn test-fast --bail && yarn build && npm pack --dry"
+    "pub:check": "rm -rf dist && yarn test-fast --bail & yarn build -f es --no-compress & yarn build -f cjs --no-compress && npm pack --dry"
   },
   "husky": {
     "hooks": {
