@@ -4,10 +4,10 @@
     "baseUrl": ".",
     "declaration": true,
     "esModuleInterop": true,
-    "importHelpers": false,
     "jsx": "react",
     "lib": ["dom", "esnext"],
     "outDir": "dist/",
+    "pretty": true,
     "paths": {
       "router/*": ["dist/*"]
     },

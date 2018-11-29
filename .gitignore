@@ -6,11 +6,11 @@
 /dist
 
 # Misc
-/.fusebox
-/coverage
-/.docz
-/.env
-/.awcache
-/.rts2_cache_cjs
-/.rts2_cache_es
-/vendor
+coverage
+vendor
+.fusebox
+.docz
+.env
+.rpt2_cache
+.rts2_cache_cjs
+.rts2_cache_es

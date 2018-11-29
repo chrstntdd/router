@@ -21,13 +21,7 @@ module.exports = {
     // Add '.ts' and '.tsx' as resolvable extensions.
     extensions: ['.ts', '.tsx', '.js', '.json'],
     alias: {
-      '@': path.resolve(__dirname, 'src/client/'),
-      packages: path.resolve(__dirname, 'src/packages/'),
-      react: path.resolve(__dirname, 'vendor/react'),
-      scheduler: path.resolve(__dirname, 'vendor/scheduler'),
-      'react-dom': path.resolve(__dirname, 'vendor/react-dom'),
-      'react-cache': path.resolve(__dirname, 'vendor/react-cache'),
-      router: path.resolve(__dirname, 'dist/index.js')
+      '@': path.resolve(__dirname, 'src/client/')
     }
   },
 

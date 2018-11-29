@@ -10,7 +10,7 @@ const canUseDOM: boolean = !!(
 /**
  * @description To wrap a history source
  */
-const getLocation = source => {
+function getLocation(source) {
   return {
     ...source.location,
     state: source.history.state,
@@ -18,7 +18,7 @@ const getLocation = source => {
   }
 }
 
-const createHistory = (source, options?: any) => {
+function createHistory(source, options?: any) {
   let listeners: any[] = []
   let location = getLocation(source)
   let transitioning = false
@@ -80,7 +80,7 @@ const createHistory = (source, options?: any) => {
 /**
  * @description Stores history entries in memory for testing or other platforms like Native
  */
-const createMemorySource = (initialPathname = '/') => {
+function createMemorySource(initialPathname = '/') {
   const stack = [{ pathname: initialPathname, search: '' }]
   const states: any[] = []
   let index = 0
@@ -121,7 +121,9 @@ const createMemorySource = (initialPathname = '/') => {
  * if available, but falls back to using a memory history that
  * mirrors the same API
  */
-const getSource = () => (canUseDOM ? window : createMemorySource())
+function getSource() {
+  return canUseDOM ? window : createMemorySource()
+}
 
 const globalHistory = createHistory(getSource())
 const { navigate } = globalHistory

@@ -1,15 +1,38 @@
 import * as React from 'react'
-import invariant from 'tiny-invariant'
 
-const startsWith = (string: string, search: string): boolean =>
-  string.substr(0, search.length) === search
+const isProduction = process.env.NODE_ENV === 'production'
+const prefix = '🔥'
 
-const shouldNavigate = event =>
-  !event.defaultPrevented &&
-  event.button === 0 &&
-  !(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey)
+/**
+ * @description
+ *  - Throw an error if the condition fails
+ *  - Strip out error messages for production
+ */
+function invariant(condition: any, message?: string) {
+  if (condition) return
 
-const stripSlashes = (str: string): string => str.replace(/(^\/+|\/+$)/g, '')
+  if (isProduction) {
+    throw new Error(prefix)
+  }
+
+  throw new Error(`${prefix}: ${message || ''}`)
+}
+
+function startsWith(string: string, search: string): boolean {
+  return string.substr(0, search.length) === search
+}
+
+function shouldNavigate(event) {
+  return (
+    !event.defaultPrevented &&
+    event.button === 0 &&
+    !(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey)
+  )
+}
+
+function stripSlashes(str: string): string {
+  return str.replace(/(^\/+|\/+$)/g, '')
+}
 
 // Route component props
 interface PRoute {
@@ -40,7 +63,7 @@ interface ReturnRoute {
  *
  * `static > dynamic > wildcard > root`
  */
-const pick = (routes: Route[], uri: string): ReturnRoute | null => {
+function pick(routes: Route[], uri: string): ReturnRoute | null {
   let match
   let default_
 
@@ -127,7 +150,9 @@ const pick = (routes: Route[], uri: string): ReturnRoute | null => {
 
 ////////////////////////////////////////////////////////////////////////////////
 // match(path, uri) - Matches just one path to a uri, also lol
-const match = (path, uri) => pick([{ path }], uri)
+function match(path, uri) {
+  return pick([{ path }], uri)
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 /***
@@ -155,7 +180,7 @@ const match = (path, uri) => pick([{ path }], uri)
  * By treating every path as a directory, linking to relative paths should
  * require less contextual information and (fingers crossed) be more intuitive.
  */
-const resolve = (to, base) => {
+function resolve(to, base) {
   // /foo/bar, /baz/qux => /foo/bar
   if (startsWith(to, '/')) return to
 
@@ -190,7 +215,7 @@ const resolve = (to, base) => {
   return addQuery('/' + segments.join('/'), toQuery)
 }
 
-const insertParams = (path, params) => {
+function insertParams(path, params) {
   const segments = segmentize(path)
 
   return (
@@ -205,7 +230,7 @@ const insertParams = (path, params) => {
   )
 }
 
-const validateRedirect = (from, to) => {
+function validateRedirect(from, to) {
   const filterFn = segment => isDynamic(segment)
 
   const fromString = segmentize(from)
@@ -230,11 +255,17 @@ const DYNAMIC_POINTS = 2
 const WILDCARD_PENALTY = 1
 const ROOT_POINTS = 1
 
-const isRootSegment = segment => segment === ''
-const isDynamic = segment => paramRe.test(segment)
-const isWildcard = segment => segment === '*'
+function isRootSegment(segment) {
+  return segment === ''
+}
+function isDynamic(segment) {
+  return paramRe.test(segment)
+}
+function isWildcard(segment) {
+  return segment === '*'
+}
 
-const rankRoute = (route, index) => {
+function rankRoute(route, index) {
   const score = route.default
     ? 0
     : segmentize(route.path).reduce((score, segment) => {
@@ -251,23 +282,31 @@ const rankRoute = (route, index) => {
   return { route, score, index }
 }
 
-const rankRoutes = routes =>
-  routes
+function rankRoutes(routes) {
+  return routes
     .map(rankRoute)
     .sort((a, b) => (a.score < b.score ? 1 : a.score > b.score ? -1 : a.index - b.index))
+}
 
-const segmentize = uri =>
-  uri
-    // strip starting/ending slashes
-    .replace(/(^\/+|\/+$)/g, '')
-    .split('/')
+function segmentize(uri) {
+  return (
+    uri
+      // strip starting/ending slashes
+      .replace(/(^\/+|\/+$)/g, '')
+      .split('/')
+  )
+}
 
-const addQuery = (pathname, query) => pathname + (query ? `?${query}` : '')
+function addQuery(pathname, query) {
+  return pathname + (query ? `?${query}` : '')
+}
 
 const reservedNames = ['uri', 'path']
 
 export {
   insertParams,
+  invariant,
+  isProduction,
   match,
   pick,
   resolve,

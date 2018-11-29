@@ -18,10 +18,9 @@
     "test-auto": "./node_modules/.bin/jest --watch --verbose false",
     "test-fast": "./node_modules/.bin/jest --silent",
     "build": "microbundle --external react,scheduler",
-    "rollup": "rm -rf dist && ./node_modules/.bin/rollup -c rollup.config.js",
     "use": "./node_modules/.bin/webpack-dev-server --quiet --color -d --config webpack.config.js",
     "use-prod": "./node_modules/.bin/webpack -p --color ---config webpack.config.js",
-    "pub:check": "rm -rf dist && yarn test-fast --bail & yarn build -f es --no-compress & yarn build -f cjs --no-compress && npm pack --dry"
+    "pub:check": "rm -rf dist && yarn build -f es --no-compress & yarn build -f cjs --no-compress && npm pack --dry"
   },
   "husky": {
     "hooks": {
@@ -33,9 +32,6 @@
       "./node_modules/.bin/prettier --write",
       "git add"
     ]
-  },
-  "dependencies": {
-    "tiny-invariant": "^1.0.3"
   },
   "peerDependencies": {
     "react": "^16.7.0-alpha.2",
@@ -68,79 +64,14 @@
     "morgan": "^1.9.1",
     "prettier": "^1.15.2",
     "prop-types": "^15.6.2",
+    "react": "^16.7.0-alpha.3",
+    "react-dom": "^16.7.0-alpha.3",
     "react-testing-library": "^5.3.0",
-    "rollup": "^0.67.3",
-    "rollup-plugin-node-resolve": "^3.4.0",
-    "rollup-plugin-terser": "^3.0.0",
-    "rollup-plugin-typescript": "^1.0.0",
-    "rollup-plugin-uglify": "^6.0.0",
     "source-map-loader": "^0.2.4",
     "ts-jest": "23.1.4",
     "typescript": "^3.1.6",
     "webpack": "^4.26.1",
     "webpack-cli": "^3.1.2",
     "webpack-dev-server": "^3.1.10"
-  },
-  "jest": {
-    "watchPlugins": [
-      "jest-watch-typeahead/filename",
-      "jest-watch-typeahead/testname"
-    ],
-    "moduleFileExtensions": [
-      "ts",
-      "tsx",
-      "js",
-      "jsx",
-      "json",
-      "node"
-    ],
-    "collectCoverageFrom": [
-      "src/**/*.{js,ts,tsx,jsx}"
-    ],
-    "coverageReporters": [
-      "lcov"
-    ],
-    "coveragePathIgnorePatterns": [
-      "\\.d\\.ts$"
-    ],
-    "testPathIgnorePatterns": [
-      "<rootDir>[/\\\\](build|docs|node_modules|scripts)[/\\\\]",
-      "\\.d\\.ts$"
-    ],
-    "testURL": "http://localhost:3000",
-    "transform": {
-      "^.+\\.(scss|css)$": "<rootDir>/config/testing/style-mock.js",
-      "^.+\\.tsx?$": "ts-jest",
-      "^.+\\.js$": "<rootDir>/node_modules/babel-jest"
-    },
-    "setupFiles": [
-      "<rootDir>/config/testing/jest-setup.js"
-    ],
-    "transformIgnorePatterns": [
-      "[/\\\\]node_modules[/\\\\].+\\.(js|jsx)$"
-    ],
-    "moduleNameMapper": {
-      "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "<rootDir>/config/testing/file-mock.js",
-      "^.+\\.(scss|css)$": "<rootDir>/config/testing/style-mock.js",
-      "^@[/](.*)": "<rootDir>/src/client/$1"
-    },
-    "moduleDirectories": [
-      "<rootDir>/src",
-      "node_modules"
-    ],
-    "testRegex": "\\.spec\\.(js|ts|jsx|tsx)$",
-    "globals": {
-      "ts-jest": {
-        "babelConfig": {
-          "env": {
-            "test": {
-              "plugins": [
-                "dynamic-import-node"
-              ]
-            }
-          }
-        }
-      }
-    }
   }
 }

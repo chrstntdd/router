@@ -1,11 +1,12 @@
 import * as React from 'react'
-import invariant from 'tiny-invariant'
 import { unstable_scheduleCallback as defer } from 'scheduler'
 
 /* CLONE/FORK OF https://github.com/reach/router */
 
 import {
   insertParams,
+  invariant,
+  isProduction,
   match,
   pick,
   resolve,
@@ -17,7 +18,7 @@ import {
 } from './helpers'
 import { createHistory, createMemorySource, globalHistory, navigate } from './history'
 
-const createNamedContext = (name: string, defaultValue?: any): React.Context<any> => {
+function createNamedContext(name: string, defaultValue?: any): React.Context<any> {
   const Ctx = React.createContext(defaultValue)
   //@ts-ignore
   Ctx.Consumer.displayName = `${name}.Consumer`
@@ -34,7 +35,7 @@ let BaseContext = createNamedContext('Base', { baseuri: '/', basepath: '/' })
  * @description Main Router component that connects the matched Component to
  * the contexts.
  */
-let Router = props => {
+function Router(props) {
   let baseContext = React.useContext(BaseContext)
 
   return (
@@ -54,7 +55,7 @@ interface PRouterImpl {
   primary?: boolean
 }
 
-let RouterImpl = (props: PRouterImpl) => {
+function RouterImpl(props: PRouterImpl) {
   let {
     basepath,
     baseuri,
@@ -122,7 +123,7 @@ interface FocusHandlerProps {
   uri: string
 }
 
-let FocusHandler = ({ uri, location, component, ...domProps }: FocusHandlerProps) => {
+function FocusHandler({ uri, location, component, ...domProps }: FocusHandlerProps) {
   let requestFocus = React.useContext(FocusContext)
 
   return (
@@ -226,7 +227,7 @@ function FocusHandlerImpl(props: PFocusHandlerImpl) {
   )
 }
 
-let Match = ({ path, children }) => {
+function Match({ path, children }) {
   let { baseuri } = React.useContext(BaseContext)
 
   return (
@@ -260,7 +261,7 @@ let LocationContext = createNamedContext('Location')
 
 // sets up a listener if there isn't one already so apps don't need to be
 // wrapped in some top level provider
-let Location = ({ children }) => {
+function Location({ children }) {
   let locationContext = React.useContext(LocationContext)
 
   return locationContext ? (
@@ -350,18 +351,20 @@ function LocationProvider(props: PLocationProvider) {
  * and pass it the url that exists on the request object of whichever node
  * framework is being used.
  */
-let ServerLocation = ({ url, children }) => (
-  <LocationContext.Provider
-    value={{
-      location: { pathname: url },
-      navigate: () => {
-        throw new Error("You can't call navigate on the server.")
-      }
-    }}
-  >
-    {children}
-  </LocationContext.Provider>
-)
+function ServerLocation({ url, children }) {
+  return (
+    <LocationContext.Provider
+      value={{
+        location: { pathname: url },
+        navigate: () => {
+          throw new Error("You can't call navigate on the server.")
+        }
+      }}
+    >
+      {children}
+    </LocationContext.Provider>
+  )
+}
 
 /**
  * Location END ////////////////////////////////////////////////
@@ -379,9 +382,11 @@ function RedirectRequest(this: IRedirectRequest, uri: string) {
   this.uri = uri
 }
 
-let isRedirect = o => o instanceof RedirectRequest
+function isRedirect(o) {
+  return o instanceof RedirectRequest
+}
 
-let redirectTo = to => {
+function redirectTo(to) {
   throw new RedirectRequest(to)
 }
 
@@ -394,14 +399,14 @@ interface PRedirectImpl {
   to: string
 }
 
-let RedirectImpl = (props: PRedirectImpl) => {
+function RedirectImpl(props: PRedirectImpl) {
   let { navigate, to, from, replace, state, noThrow, ...restProps } = props
   if (!noThrow) redirectTo(insertParams(to, restProps))
 
   return null
 }
 
-let Redirect = props => {
+function Redirect(props) {
   let locationContext = React.useContext(LocationContext)
 
   return <RedirectImpl {...locationContext} {...props} />
@@ -420,9 +425,10 @@ interface LinkProps {
   state?: any
   replace?: () => any
   getProps?: (x: LinkPropGetter) => any
+  onClick?: (e: React.SyntheticEvent) => void
 }
 
-let Link: React.ComponentType<LinkProps & React.HTMLProps<HTMLAnchorElement>> = props => {
+function Link(props: LinkProps) {
   let { baseuri } = React.useContext(BaseContext)
   let linkRef = React.useRef(null)
 
@@ -463,45 +469,47 @@ let Link: React.ComponentType<LinkProps & React.HTMLProps<HTMLAnchorElement>> = 
  * Extras
  */
 
-let createRoute = basepath => (element): Route => {
-  if (!element) return null
+function createRoute(basepath) {
+  return function(element): Route {
+    if (!element) return null
 
-  if (process.env.NODE_ENV !== 'production') {
-    invariant(
-      element.props.path || element.props.default || element.type === Redirect,
-      `<Router>: Children of <Router> must have a \`path\` or \`default\` prop, or be a \`<Redirect>\`. None found on element type \`${
-        element.type
-      }\``
-    )
+    if (!isProduction) {
+      invariant(
+        element.props.path || element.props.default || element.type === Redirect,
+        `<Router>: Children of <Router> must have a \`path\` or \`default\` prop, or be a \`<Redirect>\`. None found on element type \`${
+          element.type
+        }\``
+      )
 
-    invariant(
-      !(element.type === Redirect && (!element.props.from || !element.props.to)),
-      `<Redirect from="${element.props.from} to="${
-        element.props.to
-      }"/> requires both "from" and "to" props when inside a <Router>.`
-    )
+      invariant(
+        !(element.type === Redirect && (!element.props.from || !element.props.to)),
+        `<Redirect from="${element.props.from} to="${
+          element.props.to
+        }"/> requires both "from" and "to" props when inside a <Router>.`
+      )
 
-    invariant(
-      !(element.type === Redirect && !validateRedirect(element.props.from, element.props.to)),
-      `<Redirect from="${element.props.from} to="${
-        element.props.to
-      }"/> has mismatched dynamic segments, ensure both paths have the exact same dynamic segments.`
-    )
-  }
+      invariant(
+        !(element.type === Redirect && !validateRedirect(element.props.from, element.props.to)),
+        `<Redirect from="${element.props.from} to="${
+          element.props.to
+        }"/> has mismatched dynamic segments, ensure both paths have the exact same dynamic segments.`
+      )
+    }
 
-  if (element.props.default) {
-    return { value: element, default: true }
-  }
+    if (element.props.default) {
+      return { value: element, default: true }
+    }
 
-  let elementPath = element.type === Redirect ? element.props.from : element.props.path
+    let elementPath = element.type === Redirect ? element.props.from : element.props.path
 
-  let path =
-    elementPath === '/' ? basepath : `${stripSlashes(basepath)}/${stripSlashes(elementPath)}`
+    let path =
+      elementPath === '/' ? basepath : `${stripSlashes(basepath)}/${stripSlashes(elementPath)}`
 
-  return {
-    value: element,
-    default: element.props.default,
-    path: element.props.children ? `${stripSlashes(path)}/*` : path
+    return {
+      value: element,
+      default: element.props.default,
+      path: element.props.children ? `${stripSlashes(path)}/*` : path
+    }
   }
 }
 
