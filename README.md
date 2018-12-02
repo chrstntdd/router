@@ -1,5 +1,7 @@
 # router
 
+![Size](https://badgen.net/bundlephobia/minzip/@chrstntdd/router)
+
 Just a router for react
 
 ## Features
