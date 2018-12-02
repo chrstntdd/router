@@ -8,7 +8,7 @@ const prefix = '🔥'
  *  - Throw an error if the condition fails
  *  - Strip out error messages for production
  */
-function invariant(condition: any, message?: string) {
+let invariant = (condition: any, message?: string) => {
   if (condition) return
 
   if (isProduction) {
@@ -18,23 +18,16 @@ function invariant(condition: any, message?: string) {
   throw new Error(`${prefix}: ${message || ''}`)
 }
 
-function startsWith(string: string, search: string): boolean {
-  return string.substr(0, search.length) === search
-}
+let startsWith = (string: string, search: string): boolean =>
+  string.substr(0, search.length) === search
 
-function shouldNavigate(event) {
-  return (
-    !event.defaultPrevented &&
-    event.button === 0 &&
-    !(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey)
-  )
-}
+let shouldNavigate = event =>
+  !event.defaultPrevented &&
+  event.button === 0 &&
+  !(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey)
 
-function stripSlashes(str: string): string {
-  return str.replace(/(^\/+|\/+$)/g, '')
-}
+let stripSlashes = (str: string): string => str.replace(/(^\/+|\/+$)/g, '')
 
-// Route component props
 interface PRoute {
   children: any
 }
@@ -56,14 +49,13 @@ interface ReturnRoute {
 }
 
 /**
- *
  * @description Ranks and picks the best route to match. Each segment gets the highest
  * amount of points, then the type of segment gets an additional amount of
  * points where
  *
  * `static > dynamic > wildcard > root`
  */
-function pick(routes: Route[], uri: string): ReturnRoute | null {
+let pick = (routes: Route[], uri: string): ReturnRoute | null => {
   let match
   let default_
 
@@ -148,13 +140,12 @@ function pick(routes: Route[], uri: string): ReturnRoute | null {
   return match || default_ || null
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// match(path, uri) - Matches just one path to a uri, also lol
-function match(path, uri) {
-  return pick([{ path }], uri)
-}
+/**
+ *
+ * @description Matches just one path to a uri
+ */
+let match = (path: string, uri: string) => pick([{ path }], uri)
 
-////////////////////////////////////////////////////////////////////////////////
 /***
  * @description Resolves URIs as though every path is a directory, no files.
  * Relative URIs in the browser can feel awkward because not only can you be
@@ -180,7 +171,7 @@ function match(path, uri) {
  * By treating every path as a directory, linking to relative paths should
  * require less contextual information and (fingers crossed) be more intuitive.
  */
-function resolve(to, base) {
+let resolve = (to: string, base: string) => {
   // /foo/bar, /baz/qux => /foo/bar
   if (startsWith(to, '/')) return to
 
@@ -215,7 +206,7 @@ function resolve(to, base) {
   return addQuery('/' + segments.join('/'), toQuery)
 }
 
-function insertParams(path, params) {
+let insertParams = (path: string, params: any) => {
   const segments = segmentize(path)
 
   return (
@@ -230,8 +221,8 @@ function insertParams(path, params) {
   )
 }
 
-function validateRedirect(from, to) {
-  const filterFn = segment => isDynamic(segment)
+let validateRedirect = (from: string, to: string) => {
+  const filterFn = (segment: string) => isDynamic(segment)
 
   const fromString = segmentize(from)
     .filter(filterFn)
@@ -255,17 +246,13 @@ const DYNAMIC_POINTS = 2
 const WILDCARD_PENALTY = 1
 const ROOT_POINTS = 1
 
-function isRootSegment(segment) {
-  return segment === ''
-}
-function isDynamic(segment) {
-  return paramRe.test(segment)
-}
-function isWildcard(segment) {
-  return segment === '*'
-}
+let isRootSegment = (segment: string) => segment === ''
 
-function rankRoute(route, index) {
+let isDynamic = (segment: string) => paramRe.test(segment)
+
+let isWildcard = (segment: string) => segment === '*'
+
+let rankRoute = (route, index) => {
   const score = route.default
     ? 0
     : segmentize(route.path).reduce((score, segment) => {
@@ -282,24 +269,18 @@ function rankRoute(route, index) {
   return { route, score, index }
 }
 
-function rankRoutes(routes) {
-  return routes
+let rankRoutes = routes =>
+  routes
     .map(rankRoute)
     .sort((a, b) => (a.score < b.score ? 1 : a.score > b.score ? -1 : a.index - b.index))
-}
 
-function segmentize(uri) {
-  return (
-    uri
-      // strip starting/ending slashes
-      .replace(/(^\/+|\/+$)/g, '')
-      .split('/')
-  )
-}
+let segmentize = (uri: string) =>
+  uri
+    // strip starting/ending slashes
+    .replace(/(^\/+|\/+$)/g, '')
+    .split('/')
 
-function addQuery(pathname, query) {
-  return pathname + (query ? `?${query}` : '')
-}
+let addQuery = (pathname: string, query: string) => pathname + (query ? `?${query}` : '')
 
 const reservedNames = ['uri', 'path']
 

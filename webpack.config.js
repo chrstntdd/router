@@ -18,7 +18,6 @@ module.exports = {
   },
 
   resolve: {
-    // Add '.ts' and '.tsx' as resolvable extensions.
     extensions: ['.ts', '.tsx', '.js', '.json'],
     alias: {
       '@': path.resolve(__dirname, 'src/client/')
@@ -27,7 +26,6 @@ module.exports = {
 
   module: {
     rules: [
-      // All files with a '.ts' or '.tsx' extension will be handled by 'awesome-typescript-loader'.
       {
         test: /\.(ts|tsx)?$/,
         include: path.resolve(__dirname, 'usage'),
@@ -40,7 +38,6 @@ module.exports = {
         use: 'babel-loader'
       },
 
-      // All output '.js' files will have any sourcemaps re-processed by 'sourceyarn -map-loader'.
       { enforce: 'pre', test: /\.js$/, loader: 'source-map-loader' },
 
       {
