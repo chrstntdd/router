@@ -9,6 +9,7 @@
     "outDir": "dist/",
     "removeComments": true,
     "pretty": true,
+    "strict": true,
     "paths": {
       "router/*": ["dist/*"]
     },

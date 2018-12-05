@@ -1,5 +1,7 @@
 import * as React from 'react'
 
+type GenericObject = { [key: string]: any }
+
 const isProduction = process.env.NODE_ENV === 'production'
 const prefix = '🔥'
 
@@ -8,7 +10,7 @@ const prefix = '🔥'
  *  - Throw an error if the condition fails
  *  - Strip out error messages for production
  */
-let invariant = (condition: any, message?: string) => {
+let invariant = (condition: any, message?: string): void => {
   if (condition) return
 
   if (isProduction) {
@@ -21,7 +23,7 @@ let invariant = (condition: any, message?: string) => {
 let startsWith = (string: string, search: string): boolean =>
   string.substr(0, search.length) === search
 
-let shouldNavigate = event =>
+let shouldNavigate = (event: React.MouseEvent<HTMLElement>) =>
   !event.defaultPrevented &&
   event.button === 0 &&
   !(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey)
@@ -34,17 +36,13 @@ interface PRoute {
 
 interface Route {
   default?: boolean
-  path?: string
+  path: string
   value?: React.ReactElement<PRoute>
 }
 
 interface ReturnRoute {
   params: any
-  route: {
-    default?: any
-    path: string
-    value: React.ReactElement<PRoute>
-  }
+  route: Route
   uri: string
 }
 
@@ -78,7 +76,7 @@ let pick = (routes: Route[], uri: string): ReturnRoute | null => {
     }
 
     const routeSegments = segmentize(route.path)
-    const params = {}
+    const params: GenericObject = {}
     const max = Math.max(uriSegments.length, routeSegments.length)
     let index = 0
 
@@ -252,10 +250,10 @@ let isDynamic = (segment: string) => paramRe.test(segment)
 
 let isWildcard = (segment: string) => segment === '*'
 
-let rankRoute = (route, index) => {
+let rankRoute = (route: Route, index: number) => {
   const score = route.default
     ? 0
-    : segmentize(route.path).reduce((score, segment) => {
+    : segmentize(route.path).reduce((score: number, segment: string) => {
         score += SEGMENT_POINTS
 
         if (isRootSegment(segment)) score += ROOT_POINTS
@@ -269,7 +267,7 @@ let rankRoute = (route, index) => {
   return { route, score, index }
 }
 
-let rankRoutes = routes =>
+let rankRoutes = (routes: Route[]) =>
   routes
     .map(rankRoute)
     .sort((a, b) => (a.score < b.score ? 1 : a.score > b.score ? -1 : a.index - b.index))
