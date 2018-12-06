@@ -3,6 +3,8 @@ import { createRoot } from 'react-dom'
 
 import { Router, Link } from '../dist'
 
+import './styles.css'
+
 function Loading() {
   return <div>Loading...</div>
 }

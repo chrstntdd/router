@@ -1,0 +1,24 @@
+{
+  "extends": ["tslint-config-airbnb", "tslint-react", "tslint-config-prettier"],
+  "rules": {
+    "jsx-no-lambda": false,
+    "no-increment-decrement": false,
+    "no-parameter-reassignment": false,
+    "function-name": [
+      true,
+      {
+        "function-regex": "^[a-zA-Z][\\w\\d]+$"
+      }
+    ],
+    "variable-name": [
+      true,
+      "ban-keywords",
+      "check-format",
+      "allow-pascal-case",
+      "allow-leading-underscore"
+    ]
+  },
+  "linterOptions": {
+    "exclude": ["dist"]
+  }
+}

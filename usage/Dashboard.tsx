@@ -6,7 +6,7 @@ function Dashboard() {
   return (
     <React.Fragment>
       <div className="dashboard">Dashboard</div>
-      <Link to="/">Home</Link>
+      <Link to="/">Back Home</Link>
     </React.Fragment>
   )
 }
