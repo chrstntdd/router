@@ -477,16 +477,17 @@ let createRoute = basepath => (element): Route => {
 }
 
 export {
-  BaseContext,
   createHistory,
   createMemorySource,
   globalHistory,
+  isRedirect,
   Link,
   Location,
   LocationProvider,
   Match,
   navigate,
   Redirect,
+  redirectTo,
   Router,
   ServerLocation
 }

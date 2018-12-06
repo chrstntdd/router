@@ -34,9 +34,9 @@ interface PRoute {
   children: any
 }
 
-interface Route {
+export interface Route {
   default?: boolean
-  path: string
+  path?: string
   value?: React.ReactElement<PRoute>
 }
 
@@ -289,7 +289,6 @@ export {
   match,
   pick,
   resolve,
-  Route,
   shouldNavigate,
   startsWith,
   stripSlashes,
