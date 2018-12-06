@@ -10,7 +10,7 @@ const prefix = '🔥'
  *  - Throw an error if the condition fails
  *  - Strip out error messages for production
  */
-let invariant = (condition: any, message?: string): void => {
+const invariant = (condition: any, message?: string): void => {
   if (condition) return
 
   if (isProduction) {
@@ -20,15 +20,15 @@ let invariant = (condition: any, message?: string): void => {
   throw new Error(`${prefix}: ${message || ''}`)
 }
 
-let startsWith = (string: string, search: string): boolean =>
-  string.substr(0, search.length) === search
+const startsWith = (input: string, search: string): boolean =>
+  input.substr(0, search.length) === search
 
-let shouldNavigate = (event: React.MouseEvent<HTMLElement>) =>
+const shouldNavigate = (event: React.MouseEvent<HTMLElement>) =>
   !event.defaultPrevented &&
   event.button === 0 &&
   !(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey)
 
-let stripSlashes = (str: string): string => str.replace(/(^\/+|\/+$)/g, '')
+const stripSlashes = (str: string): string => str.replace(/(^\/+|\/+$)/g, '')
 
 interface PRoute {
   children: any
@@ -53,9 +53,9 @@ interface ReturnRoute {
  *
  * `static > dynamic > wildcard > root`
  */
-let pick = (routes: Route[], uri: string): ReturnRoute | null => {
+const pick = (routes: Route[], uri: string): ReturnRoute | null => {
   let match
-  let default_
+  let _default
 
   const [uriPathname] = uri.split('?')
   const uriSegments = segmentize(uriPathname)
@@ -67,10 +67,10 @@ let pick = (routes: Route[], uri: string): ReturnRoute | null => {
     let missed = false
 
     if (route.default) {
-      default_ = {
+      _default = {
         route,
-        params: {},
-        uri
+        uri,
+        params: {}
       }
       continue
     }
@@ -106,7 +106,7 @@ let pick = (routes: Route[], uri: string): ReturnRoute | null => {
       const dynamicMatch = paramRe.exec(routeSegment)
 
       if (dynamicMatch && !isRootUri) {
-        let matchIsNotReserved = reservedNames.indexOf(dynamicMatch[1]) === -1
+        const matchIsNotReserved = reservedNames.indexOf(dynamicMatch[1]) === -1
         invariant(
           matchIsNotReserved,
           `<Router> dynamic segment "${
@@ -114,7 +114,7 @@ let pick = (routes: Route[], uri: string): ReturnRoute | null => {
           }" is a reserved name. Please use a different name in path "${route.path}".`
         )
 
-        let value = decodeURIComponent(uriSegment)
+        const value = decodeURIComponent(uriSegment)
         params[dynamicMatch[1]] = value
       } else if (routeSegment !== uriSegment) {
         // Current segments don't match, not dynamic, not a wildcard, so no match
@@ -135,14 +135,14 @@ let pick = (routes: Route[], uri: string): ReturnRoute | null => {
     }
   }
 
-  return match || default_ || null
+  return match || _default || null
 }
 
 /**
  *
  * @description Matches just one path to a uri
  */
-let match = (path: string, uri: string) => pick([{ path }], uri)
+const match = (path: string, uri: string) => pick([{ path }], uri)
 
 /***
  * @description Resolves URIs as though every path is a directory, no files.
@@ -169,22 +169,22 @@ let match = (path: string, uri: string) => pick([{ path }], uri)
  * By treating every path as a directory, linking to relative paths should
  * require less contextual information and (fingers crossed) be more intuitive.
  */
-let resolve = (to: string, base: string) => {
+const resolve = (to: string, base: string) => {
   // /foo/bar, /baz/qux => /foo/bar
   if (startsWith(to, '/')) return to
 
-  let [toPathname, toQuery] = to.split('?')
-  let [basePathname] = base.split('?')
+  const [toPathname, toQuery] = to.split('?')
+  const [basePathname] = base.split('?')
 
-  let toSegments = segmentize(toPathname)
-  let baseSegments = segmentize(basePathname)
+  const toSegments = segmentize(toPathname)
+  const baseSegments = segmentize(basePathname)
 
   // ?a=b, /users?b=c => /users?a=b
   if (toSegments[0] === '') return addQuery(basePathname, toQuery)
 
   // profile, /users/789 => /users/789/profile
   if (!startsWith(toSegments[0], '.')) {
-    let pathname = baseSegments.concat(toSegments).join('/')
+    const pathname = baseSegments.concat(toSegments).join('/')
     return addQuery((basePathname === '/' ? '' : '/') + pathname, toQuery)
   }
 
@@ -196,7 +196,7 @@ let resolve = (to: string, base: string) => {
   const allSegments = baseSegments.concat(toSegments)
   const segments = []
   for (let i = 0, l = allSegments.length; i < l; i++) {
-    let segment = allSegments[i]
+    const segment = allSegments[i]
     if (segment === '..') segments.pop()
     else if (segment !== '.') segments.push(segment)
   }
@@ -204,7 +204,7 @@ let resolve = (to: string, base: string) => {
   return addQuery('/' + segments.join('/'), toQuery)
 }
 
-let insertParams = (path: string, params: any) => {
+const insertParams = (path: string, params: any) => {
   const segments = segmentize(path)
 
   return (
@@ -219,7 +219,7 @@ let insertParams = (path: string, params: any) => {
   )
 }
 
-let validateRedirect = (from: string, to: string) => {
+const validateRedirect = (from: string, to: string) => {
   const filterFn = (segment: string) => isDynamic(segment)
 
   const fromString = segmentize(from)
@@ -244,13 +244,13 @@ const DYNAMIC_POINTS = 2
 const WILDCARD_PENALTY = 1
 const ROOT_POINTS = 1
 
-let isRootSegment = (segment: string) => segment === ''
+const isRootSegment = (segment: string) => segment === ''
 
-let isDynamic = (segment: string) => paramRe.test(segment)
+const isDynamic = (segment: string) => paramRe.test(segment)
 
-let isWildcard = (segment: string) => segment === '*'
+const isWildcard = (segment: string) => segment === '*'
 
-let rankRoute = (route: Route, index: number) => {
+const rankRoute = (route: Route, index: number) => {
   const score = route.default
     ? 0
     : segmentize(route.path).reduce((score: number, segment: string) => {
@@ -267,18 +267,18 @@ let rankRoute = (route: Route, index: number) => {
   return { route, score, index }
 }
 
-let rankRoutes = (routes: Route[]) =>
+const rankRoutes = (routes: Route[]) =>
   routes
     .map(rankRoute)
     .sort((a, b) => (a.score < b.score ? 1 : a.score > b.score ? -1 : a.index - b.index))
 
-let segmentize = (uri: string) =>
+const segmentize = (uri: string) =>
   uri
     // strip starting/ending slashes
     .replace(/(^\/+|\/+$)/g, '')
     .split('/')
 
-let addQuery = (pathname: string, query: string) => pathname + (query ? `?${query}` : '')
+const addQuery = (pathname: string, query: string) => pathname + (query ? `?${query}` : '')
 
 const reservedNames = ['uri', 'path']
 

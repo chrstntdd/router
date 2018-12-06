@@ -20,23 +20,23 @@ import { createHistory, createMemorySource, globalHistory, navigate } from './hi
 
 const createNamedContext = (name: string, defaultValue?: any): React.Context<any> => {
   const Ctx = React.createContext(defaultValue)
-  //@ts-ignore
+  // @ts-ignore
   Ctx.Consumer.displayName = `${name}.Consumer`
-  //@ts-ignore
+  // @ts-ignore
   Ctx.Provider.displayName = `${name}.Provider`
 
   return Ctx
 }
 
 // Sets baseuri and basepath for nested routers and links
-let BaseContext = createNamedContext('Base', { baseuri: '/', basepath: '/' })
+const BaseContext = createNamedContext('Base', { baseuri: '/', basepath: '/' })
 
 /**
  * @description Main Router component that connects the matched Component to
  * the contexts.
  */
-let Router = props => {
-  let baseContext = React.useContext(BaseContext)
+const Router = props => {
+  const baseContext = React.useContext(BaseContext)
 
   return (
     <Location>
@@ -55,24 +55,22 @@ interface PRouterImpl {
   primary?: boolean
 }
 
-let RouterImpl = (props: PRouterImpl) => {
-  let {
-    basepath,
-    baseuri,
-    children,
-    component = 'div',
-    location,
-    navigate,
-    primary = true,
-    ...domProps
-  } = props
+const RouterImpl = ({
+  basepath,
+  baseuri,
+  children,
+  component = 'div',
+  location,
+  navigate,
+  primary = true,
+  ...domProps
+}: PRouterImpl) => {
+  const routes = React.Children.map(children, createRoute(basepath))
 
-  let routes = React.Children.map(children, createRoute(basepath))
-
-  let match = pick(routes, location.pathname)
+  const match = pick(routes, location.pathname)
 
   if (match) {
-    let {
+    const {
       params,
       uri,
       route,
@@ -82,14 +80,14 @@ let RouterImpl = (props: PRouterImpl) => {
     // remove the /* from the end for child routes relative paths
     basepath = route.default ? basepath : route.path.replace(/\*$/, '')
 
-    let props = {
+    const props = {
       ...params,
       uri,
       location,
       navigate: (to: string, options: any) => navigate(resolve(to, uri), options)
     }
 
-    let clone = React.cloneElement(
+    const clone = React.cloneElement(
       element,
       props,
       element.props.children ? (
@@ -100,21 +98,21 @@ let RouterImpl = (props: PRouterImpl) => {
     )
 
     /* using 'div' for < 16.3 support */
-    let FocusWrapper = primary ? FocusHandler : component
+    const FocusWrapper = primary ? FocusHandler : component
     /* don't pass any props to 'div' */
-    let wrapperProps = primary ? { uri, location, component, ...domProps } : domProps
+    const wrapperProps = primary ? { uri, location, component, ...domProps } : domProps
 
     return (
-      <BaseContext.Provider value={{ baseuri: uri, basepath }}>
+      <BaseContext.Provider value={{ basepath, baseuri: uri }}>
         <FocusWrapper {...wrapperProps}>{clone}</FocusWrapper>
       </BaseContext.Provider>
     )
-  } else {
-    return null
   }
+
+  return null
 }
 
-let FocusContext = createNamedContext('Focus')
+const FocusContext = createNamedContext('Focus')
 
 interface FocusHandlerProps {
   children: any
@@ -123,8 +121,8 @@ interface FocusHandlerProps {
   uri: string
 }
 
-let FocusHandler = ({ uri, location, component, ...domProps }: FocusHandlerProps) => {
-  let requestFocus = React.useContext(FocusContext)
+const FocusHandler = ({ uri, location, component, ...domProps }: FocusHandlerProps) => {
+  const requestFocus = React.useContext(FocusContext)
 
   return (
     <FocusHandlerImpl
@@ -151,7 +149,7 @@ interface PFocusHandlerImpl {
 let initialRender = true
 let focusHandlerCount = 0
 
-function FocusHandlerImpl(props: PFocusHandlerImpl) {
+const FocusHandlerImpl = (props: PFocusHandlerImpl) => {
   const [state, setState] = React.useState({ shouldFocus: null })
   const compEl = React.useRef(null)
 
@@ -181,7 +179,7 @@ function FocusHandlerImpl(props: PFocusHandlerImpl) {
       return
     }
 
-    let { requestFocus } = props
+    const { requestFocus } = props
 
     requestFocus
       ? requestFocus(compEl.current)
@@ -190,11 +188,11 @@ function FocusHandlerImpl(props: PFocusHandlerImpl) {
       : !compEl.current.contains(document.activeElement) && compEl.current.focus()
   }
 
-  let internalRequestFocus = node => {
+  const internalRequestFocus = node => {
     !state.shouldFocus && node.focus()
   }
 
-  let {
+  const {
     children,
     component: Comp = 'div',
     location,
@@ -218,14 +216,14 @@ function FocusHandlerImpl(props: PFocusHandlerImpl) {
   )
 }
 
-let Match = ({ path, children }) => {
-  let { baseuri } = React.useContext(BaseContext)
+const Match = ({ path, children }) => {
+  const { baseuri } = React.useContext(BaseContext)
 
   return (
     <Location>
       {({ navigate, location }) => {
-        let resolvedPath = resolve(path, baseuri)
-        let result = match(resolvedPath, location.pathname)
+        const resolvedPath = resolve(path, baseuri)
+        const result = match(resolvedPath, location.pathname)
 
         return children({
           navigate,
@@ -233,8 +231,8 @@ let Match = ({ path, children }) => {
           match: result
             ? {
                 ...result.params,
-                uri: result.uri,
-                path
+                path,
+                uri: result.uri
               }
             : null
         })
@@ -243,15 +241,15 @@ let Match = ({ path, children }) => {
   )
 }
 
-let LocationContext = createNamedContext('Location')
+const LocationContext = createNamedContext('Location')
 
 /**
  * @description
  * Sets up a listener if there isn't one already so apps don't need to be
  * wrapped a top level provider
  */
-let Location = ({ children }) => {
-  let locationContext = React.useContext(LocationContext)
+const Location = ({ children }) => {
+  const locationContext = React.useContext(LocationContext)
 
   return locationContext ? (
     children(locationContext)
@@ -274,24 +272,20 @@ interface SLocationProvider {
   }
 }
 
-LocationProvider.defaultProps = {
-  history: globalHistory
-}
-
-function LocationProvider(props: PLocationProvider) {
+const LocationProvider = (props: PLocationProvider) => {
   const [locationState, setLocationState] = React.useState({
     context: getContext(),
     refs: { unlisten: null }
   })
 
-  let unmounted: boolean | null = null
+  const unmounted = React.useRef(null)
 
   React.useEffect(() => {
     locationState.refs.unlisten = props.history.listen(() => {
       Promise.resolve().then(() => {
         defer(() => {
-          if (!unmounted) {
-            //@ts-ignore
+          if (!unmounted.current) {
+            // @ts-ignore
             setLocationState({ context: getContext() })
           }
         })
@@ -299,13 +293,13 @@ function LocationProvider(props: PLocationProvider) {
     })
 
     return () => {
-      unmounted = true
+      unmounted.current = true
       locationState.refs.unlisten()
     }
   }, [])
 
   function getContext() {
-    let {
+    const {
       history: { navigate, location }
     } = props
 
@@ -330,6 +324,10 @@ function LocationProvider(props: PLocationProvider) {
   }
 }
 
+LocationProvider.defaultProps = {
+  history: globalHistory
+}
+
 /**
  * @description When you render a <Redirect/> a redirect request is thrown,
  * preventing react from rendering the whole tree when we don’t want to do
@@ -339,7 +337,7 @@ function LocationProvider(props: PLocationProvider) {
  * and pass it the url that exists on the request object of whichever node
  * framework is being used.
  */
-let ServerLocation = ({ url, children }) => (
+const ServerLocation = ({ url, children }) => (
   <LocationContext.Provider
     value={{
       location: { pathname: url },
@@ -360,9 +358,9 @@ function RedirectRequest(this: IRedirectRequest, uri: string) {
   this.uri = uri
 }
 
-let isRedirect = (o: any) => o instanceof RedirectRequest
+const isRedirect = (o: any) => o instanceof RedirectRequest
 
-let redirectTo = (to: string) => {
+const redirectTo = (to: string) => {
   throw new RedirectRequest(to)
 }
 
@@ -375,15 +373,15 @@ interface PRedirectImpl {
   to: string
 }
 
-let RedirectImpl = (props: PRedirectImpl) => {
-  let { navigate, to, from, replace, state, noThrow, ...restProps } = props
+const RedirectImpl = (props: PRedirectImpl) => {
+  const { navigate, to, from, replace, state, noThrow, ...restProps } = props
   if (!noThrow) redirectTo(insertParams(to, restProps))
 
   return null
 }
 
-let Redirect = props => {
-  let locationContext = React.useContext(LocationContext)
+const Redirect = props => {
+  const locationContext = React.useContext(LocationContext)
 
   return <RedirectImpl {...locationContext} {...props} />
 }
@@ -403,17 +401,17 @@ interface LinkProps {
   getProps?: (x: LinkPropGetter) => any
 }
 
-let Link: React.ComponentType<LinkProps & React.HTMLProps<HTMLAnchorElement>> = props => {
-  let { baseuri } = React.useContext(BaseContext)
-  let linkRef = React.useRef(null)
+const Link: React.ComponentType<LinkProps & React.HTMLProps<HTMLAnchorElement>> = props => {
+  const { baseuri } = React.useContext(BaseContext)
+  const linkRef = React.useRef(null)
 
   return (
     <Location>
       {({ location, navigate }) => {
-        let { to, state, replace, getProps = () => {}, ...anchorProps } = props
-        let href = resolve(to, baseuri)
-        let isCurrent = location.pathname === href
-        let isPartiallyCurrent = startsWith(location.pathname, href)
+        const { to, state, replace, getProps = () => {}, ...anchorProps } = props
+        const href = resolve(to, baseuri)
+        const isCurrent = location.pathname === href
+        const isPartiallyCurrent = startsWith(location.pathname, href)
 
         return (
           <a
@@ -436,7 +434,7 @@ let Link: React.ComponentType<LinkProps & React.HTMLProps<HTMLAnchorElement>> = 
   )
 }
 
-let createRoute = basepath => (element): Route => {
+const createRoute = basepath => (element): Route => {
   if (!element) return null
 
   if (!isProduction) {
@@ -464,9 +462,9 @@ let createRoute = basepath => (element): Route => {
 
   if (element.props.default) return { value: element, default: true }
 
-  let elementPath = element.type === Redirect ? element.props.from : element.props.path
+  const elementPath = element.type === Redirect ? element.props.from : element.props.path
 
-  let path =
+  const path =
     elementPath === '/' ? basepath : `${stripSlashes(basepath)}/${stripSlashes(elementPath)}`
 
   return {

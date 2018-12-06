@@ -44,13 +44,13 @@ const canUseDOM: boolean = !!(
 /**
  * @description To wrap a history source
  */
-let getLocation = (source: Window | HistorySource) => ({
+const getLocation = (source: Window | HistorySource) => ({
   ...source.location,
   state: source.history.state,
   key: (source.history.state && source.history.state.key) || 'initial'
 })
 
-let createHistory = (source: Window | HistorySource) => {
+const createHistory = (source: Window | HistorySource) => {
   let listeners: any[] = []
   let location = getLocation(source)
   let transitioning = false
@@ -65,7 +65,7 @@ let createHistory = (source: Window | HistorySource) => {
       return transitioning
     },
 
-    _onTransitionComplete() {
+    onTransitionComplete() {
       transitioning = false
       resolveTransition()
     },
@@ -73,7 +73,7 @@ let createHistory = (source: Window | HistorySource) => {
     listen(listener: HistoryListener) {
       listeners.push(listener)
 
-      let popstateListener = () => {
+      const popstateListener = () => {
         location = getLocation(source)
         listener({ location, action: 'POP' })
       }
@@ -114,13 +114,13 @@ let createHistory = (source: Window | HistorySource) => {
 /**
  * @description Stores history entries in memory for testing or other platforms like Native
  */
-let createMemorySource = (initialPathname = '/'): HistorySource => {
+const createMemorySource = (initialPathname = '/'): HistorySource => {
   const stack = [{ pathname: initialPathname, search: '' }]
   const states: any[] = []
   let index = 0
 
   return {
-    //@ts-ignore memory location is not fully spec compliant ¯\_(ツ)_/¯
+    // @ts-ignore memory location is not fully spec compliant ¯\_(ツ)_/¯
     get location() {
       return stack[index]
     },
@@ -143,7 +143,7 @@ let createMemorySource = (initialPathname = '/'): HistorySource => {
         states.push(state)
       },
       replaceState(state: any, _: never, uri: string) {
-        let [pathname, search = ''] = uri.split('?')
+        const [pathname, search = ''] = uri.split('?')
         stack[index] = { pathname, search }
         states[index] = state
       }
@@ -156,7 +156,7 @@ let createMemorySource = (initialPathname = '/'): HistorySource => {
  * if available, but falls back to using a memory history that
  * mirrors the same API
  */
-let getSource = () => (canUseDOM ? window : createMemorySource())
+const getSource = () => (canUseDOM ? window : createMemorySource())
 
 const globalHistory = createHistory(getSource())
 const { navigate } = globalHistory

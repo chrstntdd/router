@@ -4,6 +4,7 @@
     "jsx-no-lambda": false,
     "no-increment-decrement": false,
     "no-parameter-reassignment": false,
+    "prefer-template": false,
     "function-name": [
       true,
       {
