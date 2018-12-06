@@ -4,6 +4,8 @@
 
 Just a router for react
 
+**WARNING** This router is in active development and is not yet fully tested or documented...yet
+
 ## Features
 
 * 🚫 0 ES6 class components — hooks and functions all the way down
