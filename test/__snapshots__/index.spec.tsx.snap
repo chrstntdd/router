@@ -7,7 +7,15 @@ exports[`A-Router smoke renders at a path 1`] = `
   tabindex="-1"
 >
   <div>
-    Dash 
+    Dash
+    <br />
+    <br />
+    <a
+      data-testid="home-anchor"
+      href="/"
+    >
+      Home
+    </a>
   </div>
 </div>
 `;
@@ -20,6 +28,13 @@ exports[`A-Router smoke renders the root component at "/" 1`] = `
 >
   <div>
     Home
+    <br />
+    <a
+      data-testid="dash-anchor"
+      href="/dash"
+    >
+      dash
+    </a>
   </div>
 </div>
 `;
