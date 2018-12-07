@@ -23,14 +23,19 @@ const Home = React.lazy(() => import('./Home'))
 const Dashboard = React.lazy(() => import('./Dashboard'))
 
 function App() {
+  const [routerIsMounted, setRouterIsMounted] = React.useState(false)
+
   return (
     <React.Fragment>
-      <React.Suspense maxDuration={2000} fallback={<Loading />}>
-        <Router>
-          <Home path="/" />
-          <Dashboard path="/dashboard" />
-          <FallbackRoute default />
-        </Router>
+      <React.Suspense fallback={<Loading />}>
+        <button onClick={_ => setRouterIsMounted(true)}>Mount main router</button>
+        {routerIsMounted && (
+          <Router>
+            <Home path="/" />
+            <Dashboard path="/dashboard" />
+            <FallbackRoute default />
+          </Router>
+        )}
       </React.Suspense>
     </React.Fragment>
   )
