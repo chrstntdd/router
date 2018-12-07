@@ -1,5 +1,4 @@
 import * as React from 'react'
-import { unstable_scheduleCallback as defer } from 'scheduler'
 
 /* CLONE/FORK OF https://github.com/reach/router */
 
@@ -272,18 +271,28 @@ interface SLocationProvider {
   }
 }
 
-const LocationProvider = (props: PLocationProvider) => {
+const LocationProvider = ({ history, children }: PLocationProvider) => {
+  const unmounted = React.useRef(null)
+
+  history = history || globalHistory
+
+  const getContext = React.useCallback(
+    () => ({
+      navigate: history.navigate,
+      location: history.location
+    }),
+    [history.location]
+  )
+
   const [locationState, setLocationState] = React.useState({
     context: getContext(),
     refs: { unlisten: null }
   })
 
-  const unmounted = React.useRef(null)
-
   React.useEffect(() => {
-    locationState.refs.unlisten = props.history.listen(() => {
+    locationState.refs.unlisten = history.listen(() => {
       Promise.resolve().then(() => {
-        defer(() => {
+        requestAnimationFrame(() => {
           if (!unmounted.current) {
             // @ts-ignore
             setLocationState({ context: getContext() })
@@ -298,34 +307,28 @@ const LocationProvider = (props: PLocationProvider) => {
     }
   }, [])
 
-  function getContext() {
-    const {
-      history: { navigate, location }
-    } = props
-
-    return { navigate, location }
-  }
+  // Called to complete a route transition
+  React.useEffect(
+    () => {
+      history.onTransitionComplete()
+    },
+    [locationState.context.location]
+  )
 
   try {
     return (
       <LocationContext.Provider value={locationState.context}>
-        {typeof props.children === 'function'
-          ? props.children(locationState.context)
-          : props.children || null}
+        {typeof children === 'function' ? children(locationState.context) : children || null}
       </LocationContext.Provider>
     )
   } catch (error) {
     // componentDidCatch...?
     if (isRedirect(error)) {
-      props.history.navigate(error.uri, { replace: true })
+      history.navigate(error.uri, { replace: true })
     } else {
       throw error
     }
   }
-}
-
-LocationProvider.defaultProps = {
-  history: globalHistory
 }
 
 /**

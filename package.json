@@ -23,7 +23,7 @@
     "test-auto": "./node_modules/.bin/jest --watch --verbose false",
     "test-fast": "./node_modules/.bin/jest --silent",
     "lint": "./node_modules/.bin/tslint -c tslint.json src/**/*.{ts,tsx} -t codeFrame",
-    "build": "microbundle --external react,scheduler",
+    "build": "microbundle --external react",
     "use": "./node_modules/.bin/webpack-dev-server --quiet --color -d --config webpack.config.js",
     "use-prod": "./node_modules/.bin/webpack -p --color ---config webpack.config.js",
     "pub:check": "rm -rf dist && yarn build -f es --no-compress && yarn build -f cjs --no-compress && npm pack --dry"
@@ -42,8 +42,7 @@
   },
   "peerDependencies": {
     "react": "^16.7.0-alpha.2",
-    "react-dom": "^16.7.0-alpha.2",
-    "scheduler": "^0.12.0-alpha.2"
+    "react-dom": "^16.7.0-alpha.2"
   },
   "devDependencies": {
     "@babel/core": "^7.2.0",
@@ -51,7 +50,6 @@
     "@types/node": "^10.12.12",
     "@types/react": "^16.7.13",
     "@types/react-dom": "^16.0.11",
-    "@types/scheduler": "^0.10.0",
     "awesome-typescript-loader": "^5.2.1",
     "babel-jest": "^23.6.0",
     "babel-loader": "^8.0.4",
