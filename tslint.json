@@ -5,6 +5,7 @@
     "no-increment-decrement": false,
     "no-parameter-reassignment": false,
     "prefer-template": false,
+    "no-console": true,
     "function-name": [
       true,
       {
@@ -20,6 +21,6 @@
     ]
   },
   "linterOptions": {
-    "exclude": ["dist"]
+    "exclude": ["dist/*"]
   }
 }
