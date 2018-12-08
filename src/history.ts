@@ -33,15 +33,6 @@ export interface HistorySource {
 }
 
 /**
- * @description Check the environment
- */
-const canUseDOM: boolean = !!(
-  typeof window !== 'undefined' &&
-  window.document &&
-  window.document.createElement
-)
-
-/**
  * @description To wrap a history source
  */
 const getLocation = (source: Window | HistorySource) => ({
@@ -156,7 +147,7 @@ const createMemorySource = (initialPathname = '/'): HistorySource => {
  * if available, but falls back to using a memory history that
  * mirrors the same API
  */
-const getSource = () => (canUseDOM ? window : createMemorySource())
+const getSource = () => (typeof window === 'undefined' ? createMemorySource() : window)
 
 const globalHistory = createHistory(getSource())
 const { navigate } = globalHistory
