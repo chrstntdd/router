@@ -244,15 +244,6 @@ interface PLocationProvider {
   history?: any
   children?: (any1: any) => React.ReactNode
 }
-interface SLocationProvider {
-  context: {
-    navigate: any
-    location: any
-  }
-  refs: {
-    unlisten: any
-  }
-}
 
 const LocationProvider = ({ history, children }: PLocationProvider) => {
   const unmounted = React.useRef(null)
@@ -274,9 +265,7 @@ const LocationProvider = ({ history, children }: PLocationProvider) => {
     listener.current = history.listen(() => {
       Promise.resolve().then(() => {
         requestAnimationFrame(() => {
-          if (!unmounted.current) {
-            setLocationState(getContext())
-          }
+          if (!unmounted.current) setLocationState(getContext())
         })
       })
     })
