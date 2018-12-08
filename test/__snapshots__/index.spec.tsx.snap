@@ -3,7 +3,6 @@
 exports[`A-Router smoke renders at a path 1`] = `
 <div
   role="group"
-  style="outline: none;"
   tabindex="-1"
 >
   <div>
@@ -23,7 +22,6 @@ exports[`A-Router smoke renders at a path 1`] = `
 exports[`A-Router smoke renders the root component at "/" 1`] = `
 <div
   role="group"
-  style="outline: none;"
   tabindex="-1"
 >
   <div>

@@ -45,8 +45,8 @@ const Router = props => {
 }
 
 interface PRouterImpl {
-  basepath: any
-  baseuri: any
+  basepath: string
+  baseuri: string
   component: any
   location: any
   navigate: any
@@ -58,7 +58,7 @@ const RouterImpl = ({
   basepath,
   baseuri,
   children,
-  component = 'div',
+  component,
   location,
   navigate,
   primary = true,
@@ -96,14 +96,11 @@ const RouterImpl = ({
       )
     )
 
-    /* using 'div' for < 16.3 support */
-    const FocusWrapper = primary ? FocusHandler : component
-    /* don't pass any props to 'div' */
-    const wrapperProps = primary ? { uri, location, component, ...domProps } : domProps
-
     return (
       <BaseContext.Provider value={{ basepath, baseuri: uri }}>
-        <FocusWrapper {...wrapperProps}>{clone}</FocusWrapper>
+        <FocusHandler uri={uri} location={location} component={component} {...domProps}>
+          {clone}
+        </FocusHandler>
       </BaseContext.Provider>
     )
   }
@@ -148,70 +145,56 @@ interface PFocusHandlerImpl {
 let initialRender = true
 let focusHandlerCount = 0
 
-const FocusHandlerImpl = (props: PFocusHandlerImpl) => {
-  const [state, setState] = React.useState({ shouldFocus: null })
+const FocusHandlerImpl = ({
+  children,
+  component,
+  location,
+  requestFocus,
+  role = 'group',
+  uri,
+  ...domProps
+}: PFocusHandlerImpl) => {
+  const [shouldFocus, setShouldFocus] = React.useState(null)
   const compEl = React.useRef(null)
 
   // cDM && cWU
   React.useEffect(() => {
     focus()
     focusHandlerCount++
-    setState({ shouldFocus: true, ...props })
+    setShouldFocus(true)
 
     // cleanup
     return () => {
       focusHandlerCount--
-      if (focusHandlerCount === 0) {
-        initialRender = true
-      }
+      if (focusHandlerCount === 0) initialRender = true
     }
   }, [])
 
   // cDU
-  React.useEffect(() => state.shouldFocus && focus(), [props.location])
+  React.useEffect(() => shouldFocus && focus(), [location])
 
-  function focus() {
-    if (process.env.NODE_ENV === 'test') {
-      // getting cannot read property focus of null in the tests
-      // and that bit of global `initialRender` state causes problems
-      // should probably figure it out!
-      return
-    }
+  const focus = React.useCallback(
+    () => {
+      requestFocus
+        ? requestFocus(compEl.current)
+        : initialRender
+        ? (initialRender = false)
+        : !compEl.current.contains(document.activeElement) && compEl.current.focus()
+    },
+    [requestFocus]
+  )
 
-    const { requestFocus } = props
-
-    requestFocus
-      ? requestFocus(compEl.current)
-      : initialRender
-      ? (initialRender = false)
-      : !compEl.current.contains(document.activeElement) && compEl.current.focus()
-  }
-
-  const internalRequestFocus = node => {
-    !state.shouldFocus && node.focus()
-  }
-
-  const {
-    children,
-    component: Comp = 'div',
-    location,
-    requestFocus,
-    role = 'group',
-    style,
-    uri,
-    ...domProps
-  } = props
+  const internalRequestFocus = React.useCallback(
+    node => {
+      !shouldFocus && node.focus()
+    },
+    [shouldFocus]
+  )
 
   return (
-    <Comp
-      ref={compEl}
-      role={role}
-      style={{ outline: 'none', ...style }}
-      tabIndex="-1"
-      {...domProps}
-    >
-      <FocusContext.Provider value={internalRequestFocus}>{props.children}</FocusContext.Provider>
-    </Comp>
+    <div ref={compEl} role={role} tabIndex={-1} {...domProps}>
+      <FocusContext.Provider value={internalRequestFocus}>{children}</FocusContext.Provider>
+    </div>
   )
 }
 
@@ -273,6 +256,7 @@ interface SLocationProvider {
 
 const LocationProvider = ({ history, children }: PLocationProvider) => {
   const unmounted = React.useRef(null)
+  const listener = React.useRef(null)
 
   history = history || globalHistory
 
@@ -284,26 +268,23 @@ const LocationProvider = ({ history, children }: PLocationProvider) => {
     [history.location]
   )
 
-  const [locationState, setLocationState] = React.useState({
-    context: getContext(),
-    refs: { unlisten: null }
-  })
+  const [locationState, setLocationState] = React.useState(getContext())
 
   React.useEffect(() => {
-    locationState.refs.unlisten = history.listen(() => {
+    listener.current = history.listen(() => {
       Promise.resolve().then(() => {
         requestAnimationFrame(() => {
           if (!unmounted.current) {
-            // @ts-ignore
-            setLocationState({ context: getContext() })
+            setLocationState(getContext())
           }
         })
       })
     })
 
+    // unlisten & cleanup
     return () => {
       unmounted.current = true
-      locationState.refs.unlisten()
+      listener.current()
     }
   }, [])
 
@@ -312,13 +293,13 @@ const LocationProvider = ({ history, children }: PLocationProvider) => {
     () => {
       history.onTransitionComplete()
     },
-    [locationState.context.location]
+    [locationState.location]
   )
 
   try {
     return (
-      <LocationContext.Provider value={locationState.context}>
-        {typeof children === 'function' ? children(locationState.context) : children || null}
+      <LocationContext.Provider value={locationState}>
+        {typeof children === 'function' ? children(locationState) : children || null}
       </LocationContext.Provider>
     )
   } catch (error) {
@@ -344,9 +325,7 @@ const ServerLocation = ({ url, children }) => (
   <LocationContext.Provider
     value={{
       location: { pathname: url },
-      navigate: () => {
-        throw new Error("You can't call navigate on the server.")
-      }
+      navigate: () => {}
     }}
   >
     {children}

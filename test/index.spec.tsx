@@ -21,6 +21,7 @@ const snapshot = ({ pathname, element }) => {
   expect(wrapper.container.firstChild).toMatchSnapshot()
 }
 
+const NotFound = () => <div>404 page</div>
 const Home = () => (
   <div>
     Home
@@ -77,6 +78,23 @@ describe('A-Router', () => {
           </Router>
         )
       })
+    })
+
+    it('renders a fallback route', () => {
+      const {
+        wrapper: { getByText }
+      } = runWithNavigation({
+        pathname: '/notfoundroute',
+        element: (
+          <Router>
+            <Home path="/" />
+            <Dash path="/dash" />
+            <NotFound default />
+          </Router>
+        )
+      })
+
+      expect(getByText(/404 page/i)).toBeInTheDocument()
     })
   })
 
