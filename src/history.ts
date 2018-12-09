@@ -1,22 +1,47 @@
-/**
- * @description Check the environment
- */
-const canUseDOM: boolean = !!(
-  typeof window !== 'undefined' &&
-  window.document &&
-  window.document.createElement
-)
+export type HistoryLocation = Window['location'] & { state?: any }
+
+export type NavigateFn = (to: string, options?: NavigateOptions<{}>) => void
+
+export type EventHandler = (event: Event) => void
+
+export interface NavigateOptions<T> {
+  state?: T
+  replace?: boolean
+}
+
+export type HistoryListener = (p: { location: HistoryLocation; action: 'PUSH' | 'POP' }) => void
+export type HistoryUnsubscribe = () => void
+
+export interface History {
+  readonly location: HistoryLocation
+  readonly transitioning: boolean
+  listen: (listener: HistoryListener) => HistoryUnsubscribe
+  navigate: NavigateFn
+}
+
+export interface HistorySource {
+  readonly location: HistoryLocation
+  addEventListener(name: string, listener: EventHandler): void
+  removeEventListener(name: string, listener: EventHandler): void
+  history: {
+    readonly state: any
+    pushState(state: any, title: string, uri: string): void
+    replaceState(state: any, title: string, uri: string): void
+    readonly entries: any
+    readonly index: number
+  }
+}
 
 /**
  * @description To wrap a history source
  */
-let getLocation = source => ({
+const getLocation = (source: Window | HistorySource) => ({
   ...source.location,
   state: source.history.state,
   key: (source.history.state && source.history.state.key) || 'initial'
 })
 
-let createHistory = (source, options?: any) => {
+const createHistory = (source: Window | HistorySource) => {
   let listeners: any[] = []
   let location = getLocation(source)
   let transitioning = false
@@ -31,15 +56,15 @@ let createHistory = (source, options?: any) => {
       return transitioning
     },
 
-    _onTransitionComplete() {
+    onTransitionComplete() {
       transitioning = false
       resolveTransition()
     },
 
-    listen(listener) {
+    listen(listener: HistoryListener) {
       listeners.push(listener)
 
-      let popstateListener = () => {
+      const popstateListener = () => {
         location = getLocation(source)
         listener({ location, action: 'POP' })
       }
@@ -52,14 +77,16 @@ let createHistory = (source, options?: any) => {
       }
     },
 
-    navigate(to, { state = {}, replace = false } = {}) {
+    navigate(to: string, { state = {}, replace = false } = {}) {
       state = { ...state, key: Date.now().toString() }
 
       // try...catch iOS Safari limits to 100 pushState calls
       try {
         if (transitioning || replace) {
+          // @ts-ignore not updating the title of the page
           source.history.replaceState(state, null, to)
         } else {
+          // @ts-ignore not updating the title of the page
           source.history.pushState(state, null, to)
         }
       } catch (e) {
@@ -78,17 +105,18 @@ let createHistory = (source, options?: any) => {
 /**
  * @description Stores history entries in memory for testing or other platforms like Native
  */
-let createMemorySource = (initialPathname = '/') => {
+const createMemorySource = (initialPathname = '/'): HistorySource => {
   const stack = [{ pathname: initialPathname, search: '' }]
   const states: any[] = []
   let index = 0
 
   return {
+    // @ts-ignore memory location is not fully spec compliant ¯\_(ツ)_/¯
     get location() {
       return stack[index]
     },
-    addEventListener(name, fn) {},
-    removeEventListener(name, fn) {},
+    addEventListener(name: string, fn: EventHandler) {},
+    removeEventListener(name: string, fn: EventHandler) {},
     history: {
       get entries() {
         return stack
@@ -99,14 +127,14 @@ let createMemorySource = (initialPathname = '/') => {
       get state() {
         return states[index]
       },
-      pushState(state, _, uri) {
+      pushState(state: any, _: never, uri: string) {
         const [pathname, search = ''] = uri.split('?')
         index++
         stack.push({ pathname, search })
         states.push(state)
       },
-      replaceState(state, _, uri) {
-        let [pathname, search = ''] = uri.split('?')
+      replaceState(state: any, _: never, uri: string) {
+        const [pathname, search = ''] = uri.split('?')
         stack[index] = { pathname, search }
         states[index] = state
       }
@@ -119,7 +147,7 @@ let createMemorySource = (initialPathname = '/') => {
  * if available, but falls back to using a memory history that
  * mirrors the same API
  */
-let getSource = () => (canUseDOM ? window : createMemorySource())
+const getSource = () => (typeof window === 'undefined' ? createMemorySource() : window)
 
 const globalHistory = createHistory(getSource())
 const { navigate } = globalHistory

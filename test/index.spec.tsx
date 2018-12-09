@@ -1,12 +1,12 @@
-import React from 'react'
+import * as React from 'react'
 import 'jest-dom/extend-expect'
 import { render, cleanup, fireEvent } from 'react-testing-library'
 
-import { createHistory, createMemorySource, LocationProvider, Router } from '../src'
+import { createHistory, createMemorySource, LocationProvider, Router, Link } from '../src'
 
-let runWithNavigation = (element, pathname = '/') => {
-  let history = createHistory(createMemorySource(pathname))
-  let wrapper = render(<LocationProvider history={history}>{element}</LocationProvider>)
+const runWithNavigation = ({ element, pathname = '/' }) => {
+  const history = createHistory(createMemorySource(pathname))
+  const wrapper = render(<LocationProvider history={history}>{element}</LocationProvider>)
   const snapshot = () => {
     expect(wrapper.container.firstChild).toMatchSnapshot()
   }
@@ -14,26 +14,43 @@ let runWithNavigation = (element, pathname = '/') => {
   return { history, snapshot, wrapper }
 }
 
-let snapshot = ({ pathname, element }) => {
-  let testHistory = createHistory(createMemorySource(pathname))
-  let wrapper = render(<LocationProvider history={testHistory}>{element}</LocationProvider>)
+const snapshot = ({ pathname, element }) => {
+  const testHistory = createHistory(createMemorySource(pathname))
+  const wrapper = render(<LocationProvider history={testHistory}>{element}</LocationProvider>)
 
   expect(wrapper.container.firstChild).toMatchSnapshot()
-
-  return wrapper.container.firstChild
 }
 
-let Home = () => <div>Home</div>
-let Dash = ({ children }) => <div>Dash {children}</div>
-let Group = ({ groupId, children }) => (
+const NotFound = () => <div>404 page</div>
+const Home = () => (
+  <div>
+    Home
+    <br />
+    <Link data-testid="dash-anchor" to="/dash">
+      dash
+    </Link>
+  </div>
+)
+const Dash = ({ children }) => (
+  <div>
+    Dash
+    <br />
+    {children}
+    <br />
+    <Link data-testid="home-anchor" to="/">
+      Home
+    </Link>
+  </div>
+)
+const Group = ({ groupId, children }) => (
   <div>
     Group: {groupId}
     {children}
   </div>
 )
-let PropsPrinter = props => <pre>{JSON.stringify(props, null, 2)}</pre>
-let Reports = ({ children }) => <div>Reports {children}</div>
-let AnnualReport = () => <div>Annual Report</div>
+const PropsPrinter = props => <pre>{JSON.stringify(props, null, 2)}</pre>
+const Reports = ({ children }) => <div>Reports {children}</div>
+const AnnualReport = () => <div>Annual Report</div>
 
 describe('A-Router', () => {
   afterEach(cleanup)
@@ -61,6 +78,49 @@ describe('A-Router', () => {
           </Router>
         )
       })
+    })
+
+    it('renders a fallback route', () => {
+      const {
+        wrapper: { getByText }
+      } = runWithNavigation({
+        pathname: '/notfoundroute',
+        element: (
+          <Router>
+            <Home path="/" />
+            <Dash path="/dash" />
+            <NotFound default />
+          </Router>
+        )
+      })
+
+      expect(getByText(/404 page/i)).toBeInTheDocument()
+    })
+  })
+
+  describe('using links', () => {
+    it('should have functioning links, lol', () => {
+      const {
+        history,
+        wrapper: { getByTestId }
+      } = runWithNavigation({
+        pathname: '/',
+        element: (
+          <Router>
+            <Home path="/" />
+            <Dash path="/dash" />
+          </Router>
+        )
+      })
+
+      expect(history.location.pathname).toEqual('/')
+
+      fireEvent.click(getByTestId('dash-anchor'))
+
+      // TODO find way of asserting that the page has changed without inspecting the history
+      // const dashboardPage = await waitForElement(() => getByTestId('home-anchor'))
+
+      expect(history.location.pathname).toEqual('/dash')
     })
   })
 })

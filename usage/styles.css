@@ -1,0 +1,50 @@
+*:focus {
+  outline: 1px dashed #ec9a23 !important;
+}
+
+a {
+  text-decoration: none;
+  color: skyblue;
+  padding: 0 1rem;
+}
+
+.main {
+  height: 100vh;
+  width: 100vw;
+  background-color: white;
+}
+
+.mountRouterButton {
+  position: absolute;
+  top: 0;
+  left: 0;
+  margin: 1.8rem;
+  border: none;
+  color: white;
+  padding: 0.8rem;
+  border-radius: 0.2rem;
+  transition: all ease-in-out 0.5s;
+  background-color: #57acc5;
+}
+.mountRouterButton:hover {
+  background-color: #4e576b;
+}
+
+.routerContainer {
+  background-color: seashell;
+  padding: 1.2rem;
+  min-height: 50%;
+}
+
+:global .page-container {
+  min-height: 20rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+:global .page-container h1 {
+  letter-spacing: 0.1rem;
+  text-align: center;
+}

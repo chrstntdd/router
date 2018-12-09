@@ -1,13 +1,13 @@
-import React from 'react'
+import * as React from 'react'
 
 import { Link } from '../dist'
 
 function Dashboard() {
   return (
-    <React.Fragment>
-      <div className="dashboard">Dashboard</div>
-      <Link to="/">Home</Link>
-    </React.Fragment>
+    <div className="page-container">
+      <h1>Dashboard</h1>
+      <Link to="/">Back Home</Link>
+    </div>
   )
 }
 
