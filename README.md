@@ -1,6 +1,6 @@
 # router
 
-![Size](https://badgen.net/bundlephobia/minzip/@chrstntdd/router)
+![Size](https://badgen.net/bundlephobia/minzip/@chrstntdd/router@latest)
 
 Just a router for react
 
