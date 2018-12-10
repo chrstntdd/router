@@ -24,8 +24,8 @@
     "test-fast": "./node_modules/.bin/jest --silent",
     "lint": "./node_modules/.bin/tslint -c tslint.json src/**/*.{ts,tsx} -t codeFrame",
     "build": "microbundle --external react",
-    "use": "./node_modules/.bin/webpack-dev-server --color -d --config webpack.config.js",
-    "use-prod": "./node_modules/.bin/webpack -p --color ---config webpack.config.js",
+    "use": "./node_modules/.bin/webpack-dev-server --color -d --config webpack.config.ts",
+    "use-prod": "./node_modules/.bin/webpack -p --color ---config webpack.config.ts",
     "pub:check": "rm -rf dist && yarn build -f es --no-compress && yarn build -f cjs --no-compress && npm pack --dry"
   },
   "husky": {
@@ -80,5 +80,56 @@
     "webpack": "^4.27.1",
     "webpack-cli": "^3.1.2",
     "webpack-dev-server": "^3.1.10"
+  },
+  "jest": {
+    "collectCoverageFrom": [
+      "src/**/*.{ts,tsx}"
+    ],
+    "coveragePathIgnorePatterns": [
+      "\\.d\\.ts$"
+    ],
+    "coverageReporters": [
+      "lcov"
+    ],
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json",
+      "node"
+    ],
+    "moduleDirectories": [
+      "<rootDir>/src",
+      "node_modules"
+    ],
+    "testPathIgnorePatterns": [
+      "<rootDir>[/\\\\](build|docs|node_modules|scripts)[/\\\\]",
+      "\\.d\\.ts$"
+    ],
+    "testRegex": "\\.spec\\.(ts|tsx)$",
+    "testURL": "http://localhost:3000",
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest",
+      "^.+\\.js$": "<rootDir>/node_modules/babel-jest"
+    },
+    "watchPlugins": [
+      "jest-watch-typeahead/filename",
+      "jest-watch-typeahead/testname"
+    ],
+    "globals": {
+      "ts-jest": {
+        "isolatedModules": true,
+        "babelConfig": {
+          "env": {
+            "test": {
+              "plugins": [
+                "dynamic-import-node"
+              ]
+            }
+          }
+        }
+      }
+    }
   }
 }
