@@ -1,6 +1,6 @@
 {
   "name": "@chrstntdd/router",
-  "version": "0.0.6",
+  "version": "0.0.7-rc0",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "source": "src/index.tsx",

@@ -393,6 +393,10 @@ const Link: React.ComponentType<LinkProps & React.HTMLProps<HTMLAnchorElement>> 
             href={href}
             onClick={event => {
               if (anchorProps.onClick) anchorProps.onClick(event)
+              if (isCurrent) {
+                event.preventDefault()
+                return
+              }
               if (shouldNavigate(event)) {
                 event.preventDefault()
                 navigate(href, { state, replace })

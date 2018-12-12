@@ -4,6 +4,8 @@ import { render, cleanup, fireEvent } from 'react-testing-library'
 
 import { createHistory, createMemorySource, LocationProvider, Router, Link } from '../src'
 
+jest.useFakeTimers()
+
 const runWithNavigation = ({ element, pathname = '/' }) => {
   const history = createHistory(createMemorySource(pathname))
   const wrapper = render(<LocationProvider history={history}>{element}</LocationProvider>)
@@ -26,6 +28,7 @@ const Home = () => (
   <div>
     Home
     <br />
+    <Link to="/">Current page</Link>
     <Link data-testid="dash-anchor" to="/dash">
       dash
     </Link>
@@ -37,6 +40,7 @@ const Dash = ({ children }) => (
     <br />
     {children}
     <br />
+    <Link to="/dash">Current page</Link>
     <Link data-testid="home-anchor" to="/">
       Home
     </Link>
@@ -99,10 +103,10 @@ describe('A-Router', () => {
   })
 
   describe('using links', () => {
-    it('should have functioning links, lol', () => {
+    it('should have functioning links, lol', async () => {
       const {
         history,
-        wrapper: { getByTestId }
+        wrapper: { getByTestId, getByText, debug }
       } = runWithNavigation({
         pathname: '/',
         element: (
@@ -113,6 +117,7 @@ describe('A-Router', () => {
         )
       })
 
+      expect(getByText(/home/i)).toBeInTheDocument()
       expect(history.location.pathname).toEqual('/')
 
       fireEvent.click(getByTestId('dash-anchor'))
@@ -121,6 +126,32 @@ describe('A-Router', () => {
       // const dashboardPage = await waitForElement(() => getByTestId('home-anchor'))
 
       expect(history.location.pathname).toEqual('/dash')
+    })
+
+    it('should **NOT** update anything when clicking on a link to the current url', () => {
+      const {
+        history,
+        wrapper: { getByText }
+      } = runWithNavigation({
+        pathname: '/',
+        element: (
+          <Router>
+            <Home path="/" />
+            <Dash path="/dash" />
+          </Router>
+        )
+      })
+
+      const initialHistory = history.location
+
+      expect(history.location.pathname).toEqual('/')
+      expect(getByText(/home/i)).toBeInTheDocument()
+
+      fireEvent.click(getByText(/current page/i))
+
+      expect(initialHistory).toEqual(history.location)
+      expect(getByText(/home/i)).toBeInTheDocument()
+      expect(history.location.pathname).toEqual('/')
     })
   })
 })
