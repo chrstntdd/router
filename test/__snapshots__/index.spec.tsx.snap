@@ -10,6 +10,12 @@ exports[`A-Router smoke renders at a path 1`] = `
     <br />
     <br />
     <a
+      aria-current="page"
+      href="/dash"
+    >
+      Current page
+    </a>
+    <a
       data-testid="home-anchor"
       href="/"
     >
@@ -27,6 +33,12 @@ exports[`A-Router smoke renders the root component at "/" 1`] = `
   <div>
     Home
     <br />
+    <a
+      aria-current="page"
+      href="/"
+    >
+      Current page
+    </a>
     <a
       data-testid="dash-anchor"
       href="/dash"
