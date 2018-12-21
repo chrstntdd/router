@@ -26,7 +26,8 @@
     "build": "microbundle --external react",
     "use": "./node_modules/.bin/webpack-dev-server --color -d --config webpack.config.ts",
     "use-prod": "./node_modules/.bin/webpack -p --color ---config webpack.config.ts",
-    "pub:check": "rm -rf dist && yarn build -f es --no-compress && yarn build -f cjs --no-compress && npm pack --dry"
+    "prettier": "./node_modules/.bin/prettier '{src,dist}/**/*.{ts,tsx,js,mjs,mdx}' --write",
+    "pub:check": "rm -rf dist && yarn build -f es --no-compress && yarn build -f cjs --no-compress && node ./scripts.js && yarn prettier && npm pack --dry"
   },
   "husky": {
     "hooks": {
