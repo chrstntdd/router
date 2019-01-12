@@ -17,18 +17,8 @@ import {
 } from './helpers'
 import { createHistory, createMemorySource, globalHistory, navigate } from './history'
 
-const createNamedContext = (name: string, defaultValue?: any): React.Context<any> => {
-  const Ctx = React.createContext(defaultValue)
-  // @ts-ignore
-  Ctx.Consumer.displayName = `${name}.Consumer`
-  // @ts-ignore
-  Ctx.Provider.displayName = `${name}.Provider`
-
-  return Ctx
-}
-
 // Sets baseuri and basepath for nested routers and links
-const BaseContext = createNamedContext('Base', { baseuri: '/', basepath: '/' })
+const BaseContext = React.createContext({ baseuri: '/', basepath: '/' })
 
 /**
  * @description Main Router component that connects the matched Component to
@@ -108,7 +98,8 @@ const RouterImpl = ({
   return null
 }
 
-const FocusContext = createNamedContext('Focus')
+// @ts-ignore
+const FocusContext = React.createContext()
 
 interface FocusHandlerProps {
   children: any
@@ -124,6 +115,7 @@ const FocusHandler = ({ uri, location, component, ...domProps }: FocusHandlerPro
     <FocusHandlerImpl
       {...domProps}
       component={component}
+      // @ts-ignore
       requestFocus={requestFocus}
       uri={uri}
       location={location}
@@ -223,7 +215,8 @@ const Match = ({ path, children }) => {
   )
 }
 
-const LocationContext = createNamedContext('Location')
+// @ts-ignore
+const LocationContext = React.createContext()
 
 /**
  * @description

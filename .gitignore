@@ -4,12 +4,14 @@
 # Output
 /build
 /dist
+/example
 
 # Misc
 coverage
 vendor
 .fusebox
 .docz
+.cache
 .env
 .rpt2_cache
 .rts2_cache_cjs
