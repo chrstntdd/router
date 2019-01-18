@@ -23,11 +23,11 @@
     "test-auto": "./node_modules/.bin/jest --watch --verbose false",
     "test-fast": "./node_modules/.bin/jest --silent",
     "lint": "./node_modules/.bin/tslint -c tslint.json src/**/*.{ts,tsx} -t codeFrame",
-    "build": "microbundle --external react",
+    "build": "microbundle -f es,cjs --no-compress --external react",
     "use": "parcel serve usage/index.html -d example",
     "use-prod": "./node_modules/.bin/webpack -p --color ---config webpack.config.ts",
     "prettier": "./node_modules/.bin/prettier '{src,dist}/**/*.{ts,tsx,js,mjs,mdx}' --write",
-    "pub:check": "rm -rf dist && yarn build -f es --no-compress && yarn build -f cjs --no-compress && yarn prettier && npm pack --dry"
+    "pub:check": "rm -rf dist && yarn build && yarn prettier && npm pack --dry"
   },
   "husky": {
     "hooks": {
@@ -49,7 +49,7 @@
     "@babel/core": "^7.2.2",
     "@types/jest": "^23.3.12",
     "@types/node": "^10.12.18",
-    "@types/react": "^16.7.18",
+    "@types/react": "^16.7.20",
     "@types/react-dom": "^16.0.11",
     "babel-jest": "^23.6.0",
     "babel-plugin-dynamic-import-node": "^2.2.0",
@@ -64,8 +64,8 @@
     "postcss-modules": "^1.4.1",
     "prettier": "^1.15.3",
     "prop-types": "^15.6.2",
-    "react": "^16.8.0-alpha.0",
-    "react-dom": "^16.8.0-alpha.0",
+    "react": "^16.8.0-alpha.1",
+    "react-dom": "^16.8.0-alpha.1",
     "react-testing-library": "^5.4.4",
     "style-loader": "^0.23.1",
     "ts-jest": "^23.10.5",
@@ -73,7 +73,7 @@
     "tslint-config-airbnb": "^5.11.1",
     "tslint-config-prettier": "^1.17.0",
     "tslint-react": "^3.6.0",
-    "typescript": "^3.2.2"
+    "typescript": "^3.2.4"
   },
   "jest": {
     "collectCoverageFrom": [

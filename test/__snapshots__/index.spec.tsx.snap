@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`A-Router smoke renders at a path 1`] = `
+exports[`sus-router smoke renders at a path 1`] = `
 <div
   role="group"
   tabindex="-1"
@@ -25,7 +25,7 @@ exports[`A-Router smoke renders at a path 1`] = `
 </div>
 `;
 
-exports[`A-Router smoke renders the root component at "/" 1`] = `
+exports[`sus-router smoke renders the root component at "/" 1`] = `
 <div
   role="group"
   tabindex="-1"

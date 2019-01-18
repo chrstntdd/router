@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { createRoot } from 'react-dom'
+import * as ReactDOM from 'react-dom'
 
 import { Router, Link } from '../dist'
 
@@ -28,7 +28,10 @@ function App() {
   return (
     <main className={S.main}>
       <React.Suspense fallback={<Loading />}>
-        <button className={S.mountRouterButton} onClick={_ => setRouterIsMounted(true)}>
+        <button
+          className={S.mountRouterButton}
+          onClick={_ => !routerIsMounted && setRouterIsMounted(true)}
+        >
           Mount main router
         </button>
         {routerIsMounted && (
@@ -45,4 +48,7 @@ function App() {
   )
 }
 
-createRoot(document.getElementById('🤔')).render(<App />)
+const root = document.getElementById('🤔')
+
+// ReactDOM.createRoot(root).render(<App />)
+ReactDOM.render(<App />, root)

@@ -244,13 +244,10 @@ const LocationProvider = ({ history, children }: PLocationProvider) => {
 
   history = history || globalHistory
 
-  const getContext = React.useCallback(
-    () => ({
-      navigate: history.navigate,
-      location: history.location
-    }),
-    [history.location]
-  )
+  const getContext = () => ({
+    navigate: history.navigate,
+    location: history.location
+  })
 
   const [locationState, setLocationState] = React.useState(getContext())
 
@@ -294,6 +291,11 @@ const LocationProvider = ({ history, children }: PLocationProvider) => {
   }
 }
 
+type ServerLocationProps = {
+  url: string
+  children: React.ReactElement<any>
+}
+
 /**
  * @description When you render a <Redirect/> a redirect request is thrown,
  * preventing react from rendering the whole tree when we don’t want to do
@@ -303,7 +305,7 @@ const LocationProvider = ({ history, children }: PLocationProvider) => {
  * and pass it the url that exists on the request object of whichever node
  * framework is being used.
  */
-const ServerLocation = ({ url, children }) => (
+const ServerLocation = ({ url, children }: ServerLocationProps) => (
   <LocationContext.Provider
     value={{
       location: { pathname: url },

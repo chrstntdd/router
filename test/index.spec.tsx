@@ -1,6 +1,6 @@
 import * as React from 'react'
 import 'jest-dom/extend-expect'
-import { render, cleanup, fireEvent } from 'react-testing-library'
+import { render, cleanup, fireEvent, wait } from 'react-testing-library'
 
 import { createHistory, createMemorySource, LocationProvider, Router, Link } from '../src'
 
@@ -56,7 +56,7 @@ const PropsPrinter = props => <pre>{JSON.stringify(props, null, 2)}</pre>
 const Reports = ({ children }) => <div>Reports {children}</div>
 const AnnualReport = () => <div>Annual Report</div>
 
-describe('A-Router', () => {
+describe('sus-router', () => {
   afterEach(cleanup)
 
   describe('smoke', () => {
@@ -99,6 +99,29 @@ describe('A-Router', () => {
       })
 
       expect(getByText(/404 page/i)).toBeInTheDocument()
+    })
+
+    it('renders a lazy component', async () => {
+      const TestAsyncComponent = React.lazy(() => import('./FakeLazy'))
+
+      const {
+        wrapper: { getByText }
+      } = runWithNavigation({
+        pathname: '/lazy',
+        element: (
+          <React.Suspense fallback={<div />}>
+            <Router>
+              <Home path="/" />
+              <Dash path="/dash" />
+              <TestAsyncComponent path="/lazy" />
+              <NotFound default />
+            </Router>
+          </React.Suspense>
+        )
+      })
+
+      await wait()
+      expect(getByText(/lazy/i)).toBeInTheDocument()
     })
   })
 
