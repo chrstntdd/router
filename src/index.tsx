@@ -1,7 +1,5 @@
 import * as React from 'react'
 
-/* CLONE/FORK OF https://github.com/reach/router */
-
 import {
   insertParams,
   invariant,
@@ -15,6 +13,7 @@ import {
   stripSlashes,
   validateRedirect
 } from './helpers'
+import { RouteComponentProps, NavigateFn, NavigateOptions } from './types'
 import { createHistory, createMemorySource, globalHistory, navigate } from './history'
 
 // Sets baseuri and basepath for nested routers and links
@@ -39,8 +38,8 @@ interface PRouterImpl {
   baseuri: string
   component: any
   location: any
-  navigate: any
-  children: any
+  navigate: NavigateFn
+  children: RouteComponentProps[]
   primary?: boolean
 }
 
@@ -73,7 +72,7 @@ const RouterImpl = ({
       ...params,
       uri,
       location,
-      navigate: (to: string, options: any) => navigate(resolve(to, uri), options)
+      navigate: (to: string, options: NavigateOptions<any>) => navigate(resolve(to, uri), options)
     }
 
     const clone = React.cloneElement(
@@ -98,8 +97,7 @@ const RouterImpl = ({
   return null
 }
 
-// @ts-ignore
-const FocusContext = React.createContext()
+const FocusContext = React.createContext((el: HTMLElement) => {})
 
 interface FocusHandlerProps {
   children: any
@@ -109,13 +107,12 @@ interface FocusHandlerProps {
 }
 
 const FocusHandler = ({ uri, location, component, ...domProps }: FocusHandlerProps) => {
-  const requestFocus = React.useContext(FocusContext)
+  const requestFocus = React.useContext<(el: HTMLElement) => void>(FocusContext)
 
   return (
     <FocusHandlerImpl
       {...domProps}
       component={component}
-      // @ts-ignore
       requestFocus={requestFocus}
       uri={uri}
       location={location}
@@ -126,7 +123,7 @@ const FocusHandler = ({ uri, location, component, ...domProps }: FocusHandlerPro
 interface PFocusHandlerImpl {
   component: any
   children: any
-  requestFocus: (any1: any) => void
+  requestFocus: (el: HTMLElement) => void
   uri: any
   location: any
   role?: string
@@ -146,7 +143,7 @@ const FocusHandlerImpl = ({
   uri,
   ...domProps
 }: PFocusHandlerImpl) => {
-  const [shouldFocus, setShouldFocus] = React.useState(null)
+  const [shouldFocus, setShouldFocus] = React.useState(() => true)
   const compEl = React.useRef(null)
 
   // cDM && cWU
@@ -155,7 +152,6 @@ const FocusHandlerImpl = ({
     focusHandlerCount++
     setShouldFocus(true)
 
-    // cleanup
     return () => {
       focusHandlerCount--
       if (focusHandlerCount === 0) initialRender = true
@@ -163,18 +159,17 @@ const FocusHandlerImpl = ({
   }, [])
 
   // cDU
-  React.useEffect(() => shouldFocus && focus(), [location])
+  React.useEffect(() => {
+    shouldFocus && focus()
+  }, [location])
 
-  const focus = React.useCallback(
-    () => {
-      requestFocus
-        ? requestFocus(compEl.current)
-        : initialRender
-        ? (initialRender = false)
-        : !compEl.current.contains(document.activeElement) && compEl.current.focus()
-    },
-    [requestFocus]
-  )
+  const focus = React.useCallback(() => {
+    requestFocus
+      ? requestFocus(compEl.current)
+      : initialRender
+      ? (initialRender = false)
+      : !compEl.current.contains(document.activeElement) && compEl.current.focus()
+  }, [requestFocus])
 
   const internalRequestFocus = React.useCallback(
     node => {
@@ -249,7 +244,7 @@ const LocationProvider = ({ history, children }: PLocationProvider) => {
     location: history.location
   })
 
-  const [locationState, setLocationState] = React.useState(getContext())
+  const [locationState, setLocationState] = React.useState(() => getContext())
 
   React.useEffect(() => {
     listener.current = history.listen(() => {
@@ -268,12 +263,9 @@ const LocationProvider = ({ history, children }: PLocationProvider) => {
   }, [])
 
   // Called to complete a route transition
-  React.useEffect(
-    () => {
-      history.onTransitionComplete()
-    },
-    [locationState.location]
-  )
+  React.useEffect(() => {
+    history.onTransitionComplete()
+  }, [locationState.location])
 
   try {
     return (
@@ -404,7 +396,7 @@ const Link: React.ComponentType<LinkProps & React.HTMLProps<HTMLAnchorElement>> 
   )
 }
 
-const createRoute = basepath => (element): Route => {
+const createRoute = (basepath: string) => (element: React.ReactElement<any>): Route | null => {
   if (!element) return null
 
   if (!isProduction) {

@@ -25,9 +25,10 @@
     "lint": "./node_modules/.bin/tslint -c tslint.json src/**/*.{ts,tsx} -t codeFrame",
     "build": "microbundle -f es,cjs --no-compress --external react",
     "use": "parcel serve usage/index.html -d example",
+    "start": "concurrently -k -p '[{name}]' -n 'RouterLibrary,ExampleUsage' -c 'green.bold,cyan.bold' 'yarn build -w' 'yarn use'",
     "use-prod": "./node_modules/.bin/webpack -p --color ---config webpack.config.ts",
     "prettier": "./node_modules/.bin/prettier '{src,dist}/**/*.{ts,tsx,js,mjs,mdx}' --write",
-    "pub:check": "rm -rf dist && yarn build && yarn prettier && npm pack --dry"
+    "pub-check": "rm -rf dist && yarn build && yarn prettier && npm pack --dry"
   },
   "husky": {
     "hooks": {
@@ -42,8 +43,8 @@
     ]
   },
   "peerDependencies": {
-    "react": "^16.7.0-alpha.2",
-    "react-dom": "^16.7.0-alpha.2"
+    "react": "^16.8.0-alpha.1",
+    "react-dom": "^16.8.0-alpha.1"
   },
   "devDependencies": {
     "@babel/core": "^7.2.2",
@@ -53,6 +54,7 @@
     "@types/react-dom": "^16.0.11",
     "babel-jest": "^23.6.0",
     "babel-plugin-dynamic-import-node": "^2.2.0",
+    "concurrently": "^4.1.0",
     "cross-env": "^5.2.0",
     "husky": "^1.3.1",
     "jest": "^23.6.0",
