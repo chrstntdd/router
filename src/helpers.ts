@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-type GenericObject = { [key: string]: any }
+import { ParamsObj, HistoryLocation, NavigateFn } from './types'
 
 const isProduction = process.env.NODE_ENV === 'production'
 const prefix = '🔥'
@@ -30,18 +30,21 @@ const shouldNavigate = (event: React.MouseEvent<HTMLElement>) =>
 
 const stripSlashes = (str: string): string => str.replace(/(^\/+|\/+$)/g, '')
 
-interface PRoute {
-  children: any
+type RouteElement = {
+  uri: string
+  location: HistoryLocation
+  navigate: NavigateFn
+  children?: React.ReactElement<any>[]
 }
 
 export interface Route {
   default?: boolean
   path?: string
-  value?: React.ReactElement<PRoute>
+  value?: React.ReactElement<RouteElement>
 }
 
 interface ReturnRoute {
-  params: any
+  params: ParamsObj
   route: Route
   uri: string
 }
@@ -76,7 +79,7 @@ const pick = (routes: Route[], uri: string): ReturnRoute | null => {
     }
 
     const routeSegments = segmentize(route.path)
-    const params: GenericObject = {}
+    const params: ParamsObj = {}
     const max = Math.max(uriSegments.length, routeSegments.length)
     let index = 0
 

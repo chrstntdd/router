@@ -13,17 +13,33 @@ import {
   stripSlashes,
   validateRedirect
 } from './helpers'
-import { RouteComponentProps, NavigateFn, NavigateOptions } from './types'
+import {
+  RouteComponentProps,
+  NavigateFn,
+  NavigateOptions,
+  HistoryLocation,
+  ParamsObj,
+  History
+} from './types'
 import { createHistory, createMemorySource, globalHistory, navigate } from './history'
 
 // Sets baseuri and basepath for nested routers and links
 const BaseContext = React.createContext({ baseuri: '/', basepath: '/' })
 
+interface RouterProps {
+  basepath?: string
+  baseuri?: string
+  children: RouteComponentProps[]
+  component?: React.ReactElement<any>
+  location?: HistoryLocation
+  primary?: boolean
+}
+
 /**
  * @description Main Router component that connects the matched Component to
  * the contexts.
  */
-const Router = props => {
+const Router = (props: RouterProps) => {
   const baseContext = React.useContext(BaseContext)
 
   return (
@@ -33,15 +49,7 @@ const Router = props => {
   )
 }
 
-interface PRouterImpl {
-  basepath: string
-  baseuri: string
-  component: any
-  location: any
-  navigate: NavigateFn
-  children: RouteComponentProps[]
-  primary?: boolean
-}
+type RouterImplProps = RouterProps & { navigate: NavigateFn }
 
 const RouterImpl = ({
   basepath,
@@ -52,7 +60,7 @@ const RouterImpl = ({
   navigate,
   primary = true,
   ...domProps
-}: PRouterImpl) => {
+}: RouterImplProps) => {
   const routes = React.Children.map(children, createRoute(basepath))
 
   const match = pick(routes, location.pathname)
@@ -100,9 +108,9 @@ const RouterImpl = ({
 const FocusContext = React.createContext((el: HTMLElement) => {})
 
 interface FocusHandlerProps {
-  children: any
-  component: any
-  location: any
+  children: React.ReactElement<any>
+  component: React.ReactElement<any>
+  location: HistoryLocation
   uri: string
 }
 
@@ -120,15 +128,10 @@ const FocusHandler = ({ uri, location, component, ...domProps }: FocusHandlerPro
   )
 }
 
-interface PFocusHandlerImpl {
-  component: any
-  children: any
-  requestFocus: (el: HTMLElement) => void
-  uri: any
-  location: any
+type FocusHandlerImplProps = {
   role?: string
-  style?: object
-}
+  requestFocus: (el: HTMLElement) => void
+} & FocusHandlerProps
 
 // don't focus on initial render
 let initialRender = true
@@ -142,7 +145,7 @@ const FocusHandlerImpl = ({
   role = 'group',
   uri,
   ...domProps
-}: PFocusHandlerImpl) => {
+}: FocusHandlerImplProps) => {
   const [shouldFocus, setShouldFocus] = React.useState(() => true)
   const compEl = React.useRef(null)
 
@@ -185,7 +188,18 @@ const FocusHandlerImpl = ({
   )
 }
 
-const Match = ({ path, children }) => {
+interface MatchProps {
+  path: string
+  children: (props: MatchChildrenProps) => React.ReactElement<any>
+}
+
+interface MatchChildrenProps {
+  navigate: NavigateFn
+  location: HistoryLocation
+  match: ParamsObj
+}
+
+const Match = ({ path, children }: MatchProps) => {
   const { baseuri } = React.useContext(BaseContext)
 
   return (
@@ -228,12 +242,12 @@ const Location = ({ children }) => {
   )
 }
 
-interface PLocationProvider {
-  history?: any
-  children?: (any1: any) => React.ReactNode
+interface LocationProviderProps {
+  history?: History
+  children?: (props: unknown) => React.ReactNode
 }
 
-const LocationProvider = ({ history, children }: PLocationProvider) => {
+const LocationProvider = ({ history, children }: LocationProviderProps) => {
   const unmounted = React.useRef(null)
   const listener = React.useRef(null)
 
@@ -353,10 +367,9 @@ interface LinkPropGetter {
 
 interface LinkProps {
   to: string
-  innerRef?: any
   state?: any
   replace?: () => any
-  getProps?: (x: LinkPropGetter) => any
+  getProps?: (props: LinkPropGetter) => void
 }
 
 const Link: React.ComponentType<LinkProps & React.HTMLProps<HTMLAnchorElement>> = props => {

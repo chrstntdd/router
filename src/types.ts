@@ -15,6 +15,7 @@ export type HistoryUnsubscribe = () => void
 export interface History {
   readonly location: HistoryLocation
   readonly transitioning: boolean
+  onTransitionComplete: () => void
   listen: (listener: HistoryListener) => HistoryUnsubscribe
   navigate: NavigateFn
 }
@@ -39,3 +40,5 @@ export type RouteComponentProps<ComponentProps = {}> = Partial<ComponentProps> &
   navigate?: NavigateFn
   uri?: string
 }
+
+export type ParamsObj = { [key: string]: any }

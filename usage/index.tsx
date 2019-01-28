@@ -50,5 +50,5 @@ function App() {
 
 const root = document.getElementById('🤔')
 
-// ReactDOM.createRoot(root).render(<App />)
-ReactDOM.render(<App />, root)
+ReactDOM.createRoot(root).render(<App />)
+// ReactDOM.render(<App />, root)
