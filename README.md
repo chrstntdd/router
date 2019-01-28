@@ -1,6 +1,8 @@
 # router
 
+[![Build Status](https://travis-ci.org/chrstntdd/router.svg?branch=master)](https://travis-ci.org/chrstntdd/router)
 ![Size](https://badgen.net/bundlephobia/minzip/@chrstntdd/router@latest)
+[![Coverage Status](https://coveralls.io/repos/github/chrstntdd/router/badge.svg?branch=master)](https://coveralls.io/github/chrstntdd/router?branch=master)
 
 Just a router for react
 
@@ -35,7 +37,7 @@ $ yarn add @chrstntdd/router
 
 ## Basic Example
 
-```tsx
+```jsx
 import React from 'react'
 import ReactDOM from 'react-dom'
 
