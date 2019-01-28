@@ -33,6 +33,50 @@ With yarn
 $ yarn add @chrstntdd/router
 ```
 
+## Basic Example
+
+```tsx
+import React from 'react'
+import ReactDOM from 'react-dom'
+
+import { Router, Link } from '@chrstntdd/router'
+
+function Loading() {
+  return <div>Loading...</div>
+}
+
+function FallbackRoute() {
+  return (
+    <div>
+      <h1>Route not found</h1>
+      <br />
+      <Link to="/">Back home</Link>
+    </div>
+  )
+}
+
+const Home = React.lazy(() => import(/* webpackChunkName: "home" */ './Home'))
+const PageTwo = React.lazy(() => import(/* webpackChunkName: "page-two" */ './PageTwo'))
+
+function App() {
+  return (
+    <main>
+      <React.Suspense fallback={<Loading />}>
+        <div>
+          <Router>
+            <Home path="/" />
+            <PageTwo path="/page-two" />
+            <FallbackRoute default />
+          </Router>
+        </div>
+      </React.Suspense>
+    </main>
+  )
+}
+
+ReactDOM.render(<App />, document.getElementById('root'))
+```
+
 ## Considerations
 
 The published code depends on `Object.assign()` [support](http://kangax.github.io/compat-table/es6/#test-Object_static_methods_Object.assign) and [requestAnimationFrame](https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame). If your environment does not support these browser features, then you must provide your own polyfills.
