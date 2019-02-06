@@ -5,6 +5,7 @@
     "no-increment-decrement": false,
     "no-parameter-reassignment": false,
     "prefer-template": false,
+    "triple-equals": false,
     "no-console": true,
     "function-name": [
       true,

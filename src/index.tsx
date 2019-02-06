@@ -148,7 +148,7 @@ const FocusHandlerImpl: React.FC<FocusHandlerImplProps> = ({
 
     return () => {
       focusHandlerCount--
-      if (focusHandlerCount === 0) initialRender = true
+      if (focusHandlerCount == 0) initialRender = true
     }
   }, [])
 
@@ -273,7 +273,7 @@ const LocationProvider: React.FC<LocationProviderProps> = ({ history, children }
 
   return (
     <LocationContext.Provider value={locationState}>
-      {typeof children === 'function' ? children(locationState) : children || null}
+      {typeof children == 'function' ? children(locationState) : children || null}
     </LocationContext.Provider>
   )
 }
@@ -341,7 +341,7 @@ const Link: React.FC<LinkProps & React.HTMLProps<HTMLAnchorElement>> = props => 
       {({ location, navigate }) => {
         const { to, state, replace, getProps, ...anchorProps } = props
         const href = resolve(to, baseuri)
-        const isCurrent = location.pathname === href
+        const isCurrent = location.pathname == href
         const isPartiallyCurrent = startsWith(location.pathname, href)
 
         return (
@@ -349,7 +349,7 @@ const Link: React.FC<LinkProps & React.HTMLProps<HTMLAnchorElement>> = props => 
             ref={linkRef}
             aria-current={isCurrent ? 'page' : undefined}
             {...anchorProps}
-            {...typeof getProps === 'function' &&
+            {...typeof getProps == 'function' &&
               getProps({ isCurrent, isPartiallyCurrent, href, location })}
             href={href}
             onClick={event => {
@@ -375,21 +375,21 @@ const createRoute = (basepath: string) => (element: React.ReactElement<any>): Ro
 
   if (!isProduction) {
     invariant(
-      element.props.path || element.props.default || element.type === Redirect,
+      element.props.path || element.props.default || element.type == Redirect,
       `<Router>: Children of <Router> must have a \`path\` or \`default\` prop, or be a \`<Redirect>\`. None found on element type \`${
         element.type
       }\``
     )
 
     invariant(
-      !(element.type === Redirect && (!element.props.from || !element.props.to)),
+      !(element.type == Redirect && (!element.props.from || !element.props.to)),
       `<Redirect from="${element.props.from} to="${
         element.props.to
       }"/> requires both "from" and "to" props when inside a <Router>.`
     )
 
     invariant(
-      !(element.type === Redirect && !validateRedirect(element.props.from, element.props.to)),
+      !(element.type == Redirect && !validateRedirect(element.props.from, element.props.to)),
       `<Redirect from="${element.props.from} to="${
         element.props.to
       }"/> has mismatched dynamic segments, ensure both paths have the exact same dynamic segments.`
@@ -398,10 +398,10 @@ const createRoute = (basepath: string) => (element: React.ReactElement<any>): Ro
 
   if (element.props.default) return { value: element, default: true }
 
-  const elementPath = element.type === Redirect ? element.props.from : element.props.path
+  const elementPath = element.type == Redirect ? element.props.from : element.props.path
 
   const path =
-    elementPath === '/' ? basepath : `${stripSlashes(basepath)}/${stripSlashes(elementPath)}`
+    elementPath == '/' ? basepath : `${stripSlashes(basepath)}/${stripSlashes(elementPath)}`
 
   return {
     value: element,

@@ -2,7 +2,7 @@ import * as React from 'react'
 
 import { ParamsObj, HistoryLocation, NavigateFn } from './types'
 
-const isProduction = process.env.NODE_ENV === 'production'
+const isProduction = process.env.NODE_ENV == 'production'
 const prefix = '🔥'
 
 /**
@@ -21,11 +21,11 @@ const invariant = (condition: any, message?: string): void => {
 }
 
 const startsWith = (input: string, search: string): boolean =>
-  input.substr(0, search.length) === search
+  input.substr(0, search.length) == search
 
 const shouldNavigate = (event: React.MouseEvent<HTMLElement>) =>
   !event.defaultPrevented &&
-  event.button === 0 &&
+  event.button == 0 &&
   !(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey)
 
 const stripSlashes = (str: string): string => str.replace(/(^\/+|\/+$)/g, '')
@@ -62,7 +62,7 @@ const pick = (routes: Route[], uri: string): ReturnRoute | null => {
 
   const [uriPathname] = uri.split('?')
   const uriSegments = segmentize(uriPathname)
-  const isRootUri = uriSegments[0] === ''
+  const isRootUri = uriSegments[0] == ''
   const ranked = rankRoutes(routes)
 
   for (let i = 0, l = ranked.length; i < l; i++) {
@@ -98,7 +98,7 @@ const pick = (routes: Route[], uri: string): ReturnRoute | null => {
         break
       }
 
-      if (uriSegment === undefined) {
+      if (uriSegment == undefined) {
         // URI is shorter than the route, no match
         // uri:   /users
         // route: /users/:userId
@@ -109,7 +109,7 @@ const pick = (routes: Route[], uri: string): ReturnRoute | null => {
       const dynamicMatch = paramRe.exec(routeSegment)
 
       if (dynamicMatch && !isRootUri) {
-        const matchIsNotReserved = reservedNames.indexOf(dynamicMatch[1]) === -1
+        const matchIsNotReserved = reservedNames.indexOf(dynamicMatch[1]) == -1
         invariant(
           matchIsNotReserved,
           `<Router> dynamic segment "${
@@ -119,7 +119,7 @@ const pick = (routes: Route[], uri: string): ReturnRoute | null => {
 
         const value = decodeURIComponent(uriSegment)
         params[dynamicMatch[1]] = value
-      } else if (routeSegment !== uriSegment) {
+      } else if (routeSegment != uriSegment) {
         // Current segments don't match, not dynamic, not a wildcard, so no match
         // uri:   /users/123/settings
         // route: /users/:id/profile
@@ -183,12 +183,12 @@ const resolve = (to: string, base: string) => {
   const baseSegments = segmentize(basePathname)
 
   // ?a=b, /users?b=c => /users?a=b
-  if (toSegments[0] === '') return addQuery(basePathname, toQuery)
+  if (toSegments[0] == '') return addQuery(basePathname, toQuery)
 
   // profile, /users/789 => /users/789/profile
   if (!startsWith(toSegments[0], '.')) {
     const pathname = baseSegments.concat(toSegments).join('/')
-    return addQuery((basePathname === '/' ? '' : '/') + pathname, toQuery)
+    return addQuery((basePathname == '/' ? '' : '/') + pathname, toQuery)
   }
 
   // ./         /users/123  =>  /users/123
@@ -200,8 +200,8 @@ const resolve = (to: string, base: string) => {
   const segments = []
   for (let i = 0, l = allSegments.length; i < l; i++) {
     const segment = allSegments[i]
-    if (segment === '..') segments.pop()
-    else if (segment !== '.') segments.push(segment)
+    if (segment == '..') segments.pop()
+    else if (segment != '.') segments.push(segment)
   }
 
   return addQuery('/' + segments.join('/'), toQuery)
@@ -234,7 +234,7 @@ const validateRedirect = (from: string, to: string) => {
     .sort()
     .join('/')
 
-  return fromString === toString
+  return fromString == toString
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -247,11 +247,11 @@ const DYNAMIC_POINTS = 2
 const WILDCARD_PENALTY = 1
 const ROOT_POINTS = 1
 
-const isRootSegment = (segment: string) => segment === ''
+const isRootSegment = (segment: string) => segment == ''
 
 const isDynamic = (segment: string) => paramRe.test(segment)
 
-const isWildcard = (segment: string) => segment === '*'
+const isWildcard = (segment: string) => segment == '*'
 
 const rankRoute = (route: Route, index: number) => {
   const score = route.default

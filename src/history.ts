@@ -115,7 +115,7 @@ const createMemorySource = (initialPathname = '/'): HistorySource => {
  * if available, but falls back to using a memory history that
  * mirrors the same API
  */
-const getSource = () => (typeof window === 'undefined' ? createMemorySource() : window)
+const getSource = () => (typeof window == 'undefined' ? createMemorySource() : window)
 
 const globalHistory = createHistory(getSource())
 const { navigate } = globalHistory
