@@ -1,9 +1,11 @@
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 
-import { Router, Link } from '../dist'
+import { Router, Link, Redirect } from '../dist'
 
 import * as S from './styles.css'
+
+import { MainNav } from './MainNav'
 
 function Loading() {
   return <div>Loading...</div>
@@ -22,8 +24,20 @@ function FallbackRoute() {
 const Home = React.lazy(() => import('./Home'))
 const Dashboard = React.lazy(() => import('./Dashboard'))
 
+const AuthenticatedPage = ({ isAuthenticated }) => {
+  return isAuthenticated ? (
+    <div>
+      <MainNav />
+      Welcome!
+    </div>
+  ) : (
+    <Redirect to="/" />
+  )
+}
+
 function App() {
-  const [routerIsMounted, setRouterIsMounted] = React.useState(false)
+  const [routerIsMounted, setRouterIsMounted] = React.useState(true)
+  const [isAuthenticated, setIsAuthenticated] = React.useState(false)
 
   return (
     <main className={S.main}>
@@ -34,11 +48,15 @@ function App() {
         >
           Mount main router
         </button>
+        <button className={S.mountRouterButton} onClick={_ => setIsAuthenticated(!isAuthenticated)}>
+          Become {isAuthenticated ? 'a normie' : 'a part of the elite 1%'}
+        </button>
         {routerIsMounted && (
           <div className={S.routerContainer}>
             <Router>
               <Home path="/" />
               <Dashboard path="/dashboard" />
+              <AuthenticatedPage path="/secret" isAuthenticated={isAuthenticated} />
               <FallbackRoute default />
             </Router>
           </div>

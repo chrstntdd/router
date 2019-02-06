@@ -1,11 +1,34 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`sus-router smoke renders at a path 1`] = `
+exports[`sus-router nesting parses multiple params when nested 1`] = `
 <div
   role="group"
   tabindex="-1"
 >
   <div>
+    123
+    <div
+      role="group"
+      tabindex="-1"
+    >
+      <div>
+        123
+         - 
+        456
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`sus-router smoke renders at a path 1`] = `
+<div
+  role="group"
+  tabindex="-1"
+>
+  <div
+    data-testid="dashboard-page"
+  >
     Dash
     <br />
     <br />
@@ -30,7 +53,9 @@ exports[`sus-router smoke renders the root component at "/" 1`] = `
   role="group"
   tabindex="-1"
 >
-  <div>
+  <div
+    data-testid="home-page"
+  >
     Home
     <br />
     <a

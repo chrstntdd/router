@@ -1,10 +1,8 @@
 import * as React from 'react'
 import 'jest-dom/extend-expect'
-import { render, cleanup, fireEvent, wait } from 'react-testing-library'
+import { render, cleanup, fireEvent, wait, flushEffects, within } from 'react-testing-library'
 
-import { createHistory, createMemorySource, LocationProvider, Router, Link } from '../src'
-
-jest.useFakeTimers()
+import { createHistory, createMemorySource, LocationProvider, Router, Link, Redirect } from '../src'
 
 const runWithNavigation = ({ element, pathname = '/' }) => {
   const history = createHistory(createMemorySource(pathname))
@@ -25,7 +23,7 @@ const snapshot = ({ pathname, element }) => {
 
 const NotFound = () => <div>404 page</div>
 const Home = () => (
-  <div>
+  <div data-testid="home-page">
     Home
     <br />
     <Link to="/">Current page</Link>
@@ -35,7 +33,7 @@ const Home = () => (
   </div>
 )
 const Dash = ({ children }) => (
-  <div>
+  <div data-testid="dashboard-page">
     Dash
     <br />
     {children}
@@ -57,6 +55,9 @@ const Reports = ({ children }) => <div>Reports {children}</div>
 const AnnualReport = () => <div>Annual Report</div>
 
 describe('sus-router', () => {
+  beforeEach(() => {
+    window.requestAnimationFrame = jest.fn(fn => fn())
+  })
   afterEach(cleanup)
 
   describe('smoke', () => {
@@ -125,11 +126,38 @@ describe('sus-router', () => {
     })
   })
 
+  describe('rendering a Redirect component', () => {
+    it('should redirect!', async () => {
+      const CurrentPage = ({ isAuthenticated }) =>
+        isAuthenticated ? <div>{'Welcome'}</div> : <Redirect to="/home" />
+
+      const {
+        history,
+        wrapper: { getByTestId }
+      } = runWithNavigation({
+        pathname: '/secret',
+        element: (
+          <Router>
+            <CurrentPage path="secret" isAuthenticated={false} />
+            <Home path="home" />
+          </Router>
+        )
+      })
+
+      expect(history.location.pathname).toEqual('/secret')
+
+      await wait()
+
+      expect(getByTestId('home-page')).toBeInTheDocument()
+      expect(history.location.pathname).toEqual('/home')
+    })
+  })
+
   describe('using links', () => {
     it('should have functioning links, lol', async () => {
       const {
         history,
-        wrapper: { getByTestId, getByText, debug }
+        wrapper: { getByTestId }
       } = runWithNavigation({
         pathname: '/',
         element: (
@@ -140,14 +168,13 @@ describe('sus-router', () => {
         )
       })
 
-      expect(getByText(/home/i)).toBeInTheDocument()
+      expect(getByTestId('home-page')).toBeInTheDocument()
       expect(history.location.pathname).toEqual('/')
 
       fireEvent.click(getByTestId('dash-anchor'))
 
-      // TODO find way of asserting that the page has changed without inspecting the history
-      // const dashboardPage = await waitForElement(() => getByTestId('home-anchor'))
-
+      // TODO find way of asserting that the page has changed without ONLY inspecting the history
+      // expect(getByTestId('dashboard-page')).toBeInTheDocument()
       expect(history.location.pathname).toEqual('/dash')
     })
 
@@ -175,6 +202,75 @@ describe('sus-router', () => {
       expect(initialHistory).toEqual(history.location)
       expect(getByText(/home/i)).toBeInTheDocument()
       expect(history.location.pathname).toEqual('/')
+    })
+
+    it('should support a prop getter', () => {
+      const getThemProps = props => {
+        expect(props).toMatchInlineSnapshot(`
+Object {
+  "href": "/",
+  "isCurrent": true,
+  "isPartiallyCurrent": true,
+  "location": Object {
+    "key": "initial",
+    "pathname": "/",
+    "search": "",
+    "state": undefined,
+  },
+}
+`)
+        return props.isCurrent ? { className: 'active' } : null
+      }
+      const HomePage = () => {
+        return (
+          <div data-testid="home-page">
+            <Link to="/" getProps={getThemProps}>
+              Current Page
+            </Link>
+          </div>
+        )
+      }
+      const {
+        wrapper: { getByText }
+      } = runWithNavigation({
+        pathname: '/',
+        element: (
+          <Router>
+            <HomePage path="/" />
+          </Router>
+        )
+      })
+
+      expect(getByText(/Current Page/i)).toHaveClass('active')
+    })
+  })
+
+  describe('nesting', () => {
+    it('parses multiple params when nested', () => {
+      const Group = ({ groupId, children }) => (
+        <div>
+          {groupId}
+          {children}
+        </div>
+      )
+      const User = ({ userId, groupId }) => (
+        <div>
+          {groupId} - {userId}
+        </div>
+      )
+
+      const { wrapper } = runWithNavigation({
+        pathname: `/group/123/user/456`,
+        element: (
+          <Router>
+            <Group path="group/:groupId">
+              <User path="user/:userId" />
+            </Group>
+          </Router>
+        )
+      })
+
+      expect(wrapper.container.firstChild).toMatchSnapshot()
     })
   })
 })

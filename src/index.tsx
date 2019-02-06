@@ -13,14 +13,7 @@ import {
   stripSlashes,
   validateRedirect
 } from './helpers'
-import {
-  RouteComponentProps,
-  NavigateFn,
-  NavigateOptions,
-  HistoryLocation,
-  ParamsObj,
-  History
-} from './types'
+import { NavigateFn, NavigateOptions, HistoryLocation, ParamsObj, History } from './types'
 import { createHistory, createMemorySource, globalHistory, navigate } from './history'
 
 // Sets baseuri and basepath for nested routers and links
@@ -29,7 +22,6 @@ const BaseContext = React.createContext({ baseuri: '/', basepath: '/' })
 interface RouterProps {
   basepath?: string
   baseuri?: string
-  children: RouteComponentProps[]
   component?: React.ReactElement<any>
   location?: HistoryLocation
   primary?: boolean
@@ -39,7 +31,7 @@ interface RouterProps {
  * @description Main Router component that connects the matched Component to
  * the contexts.
  */
-const Router = (props: RouterProps) => {
+const Router: React.FC<RouterProps> = props => {
   const baseContext = React.useContext(BaseContext)
 
   return (
@@ -51,7 +43,7 @@ const Router = (props: RouterProps) => {
 
 type RouterImplProps = RouterProps & { navigate: NavigateFn }
 
-const RouterImpl = ({
+const RouterImpl: React.FC<RouterImplProps> = ({
   basepath,
   baseuri,
   children,
@@ -60,7 +52,7 @@ const RouterImpl = ({
   navigate,
   primary = true,
   ...domProps
-}: RouterImplProps) => {
+}) => {
   const routes = React.Children.map(children, createRoute(basepath))
 
   const match = pick(routes, location.pathname)
@@ -108,13 +100,12 @@ const RouterImpl = ({
 const FocusContext = React.createContext((el: HTMLElement) => {})
 
 interface FocusHandlerProps {
-  children: React.ReactElement<any>
   component: React.ReactElement<any>
   location: HistoryLocation
   uri: string
 }
 
-const FocusHandler = ({ uri, location, component, ...domProps }: FocusHandlerProps) => {
+const FocusHandler: React.FC<FocusHandlerProps> = ({ uri, location, component, ...domProps }) => {
   const requestFocus = React.useContext<(el: HTMLElement) => void>(FocusContext)
 
   return (
@@ -137,7 +128,7 @@ type FocusHandlerImplProps = {
 let initialRender = true
 let focusHandlerCount = 0
 
-const FocusHandlerImpl = ({
+const FocusHandlerImpl: React.FC<FocusHandlerImplProps> = ({
   children,
   component,
   location,
@@ -145,7 +136,7 @@ const FocusHandlerImpl = ({
   role = 'group',
   uri,
   ...domProps
-}: FocusHandlerImplProps) => {
+}) => {
   const [shouldFocus, setShouldFocus] = React.useState(() => true)
   const compEl = React.useRef(null)
 
@@ -199,7 +190,7 @@ interface MatchChildrenProps {
   match: ParamsObj
 }
 
-const Match = ({ path, children }: MatchProps) => {
+const Match: React.FC<MatchProps> = ({ path, children }) => {
   const { baseuri } = React.useContext(BaseContext)
 
   return (
@@ -244,10 +235,9 @@ const Location = ({ children }) => {
 
 interface LocationProviderProps {
   history?: History
-  children?: (props: unknown) => React.ReactNode
 }
 
-const LocationProvider = ({ history, children }: LocationProviderProps) => {
+const LocationProvider: React.FC<LocationProviderProps> = ({ history, children }) => {
   const unmounted = React.useRef(null)
   const listener = React.useRef(null)
 
@@ -281,25 +271,11 @@ const LocationProvider = ({ history, children }: LocationProviderProps) => {
     history.onTransitionComplete()
   }, [locationState.location])
 
-  try {
-    return (
-      <LocationContext.Provider value={locationState}>
-        {typeof children === 'function' ? children(locationState) : children || null}
-      </LocationContext.Provider>
-    )
-  } catch (error) {
-    // componentDidCatch...?
-    if (isRedirect(error)) {
-      history.navigate(error.uri, { replace: true })
-    } else {
-      throw error
-    }
-  }
-}
-
-type ServerLocationProps = {
-  url: string
-  children: React.ReactElement<any>
+  return (
+    <LocationContext.Provider value={locationState}>
+      {typeof children === 'function' ? children(locationState) : children || null}
+    </LocationContext.Provider>
+  )
 }
 
 /**
@@ -311,7 +287,7 @@ type ServerLocationProps = {
  * and pass it the url that exists on the request object of whichever node
  * framework is being used.
  */
-const ServerLocation = ({ url, children }: ServerLocationProps) => (
+const ServerLocation: React.FC<{ url: string }> = ({ url, children }) => (
   <LocationContext.Provider
     value={{
       location: { pathname: url },
@@ -322,40 +298,23 @@ const ServerLocation = ({ url, children }: ServerLocationProps) => (
   </LocationContext.Provider>
 )
 
-interface IRedirectRequest {
-  uri: string
-}
-
-function RedirectRequest(this: IRedirectRequest, uri: string) {
-  this.uri = uri
-}
-
-const isRedirect = (o: any) => o instanceof RedirectRequest
-
-const redirectTo = (to: string) => {
-  throw new RedirectRequest(to)
-}
-
-interface PRedirectImpl {
-  from: string
-  navigate: (toPath: string, state: { replace: boolean; state: object }) => any
-  noThrow: boolean
-  replace: boolean
-  state: any
+interface RedirectProps {
+  from?: string
+  replace?: boolean
+  state?: unknown
   to: string
 }
 
-const RedirectImpl = (props: PRedirectImpl) => {
-  const { navigate, to, from, replace, state, noThrow, ...restProps } = props
-  if (!noThrow) redirectTo(insertParams(to, restProps))
+const Redirect: React.FC<RedirectProps> = ({ to, from, state, replace = true, ...props }) => {
+  const { navigate } = React.useContext(LocationContext)
+
+  React.useEffect(() => {
+    Promise.resolve().then(() => {
+      navigate(insertParams(to, props), { replace, state })
+    })
+  }, [])
 
   return null
-}
-
-const Redirect = props => {
-  const locationContext = React.useContext(LocationContext)
-
-  return <RedirectImpl {...locationContext} {...props} />
 }
 
 interface LinkPropGetter {
@@ -369,17 +328,18 @@ interface LinkProps {
   to: string
   state?: any
   replace?: () => any
+  /* To support hooking into location data for applying your own props */
   getProps?: (props: LinkPropGetter) => void
 }
 
-const Link: React.ComponentType<LinkProps & React.HTMLProps<HTMLAnchorElement>> = props => {
+const Link: React.FC<LinkProps & React.HTMLProps<HTMLAnchorElement>> = props => {
   const { baseuri } = React.useContext(BaseContext)
   const linkRef = React.useRef(null)
 
   return (
     <Location>
       {({ location, navigate }) => {
-        const { to, state, replace, getProps = () => {}, ...anchorProps } = props
+        const { to, state, replace, getProps, ...anchorProps } = props
         const href = resolve(to, baseuri)
         const isCurrent = location.pathname === href
         const isPartiallyCurrent = startsWith(location.pathname, href)
@@ -389,7 +349,8 @@ const Link: React.ComponentType<LinkProps & React.HTMLProps<HTMLAnchorElement>> 
             ref={linkRef}
             aria-current={isCurrent ? 'page' : undefined}
             {...anchorProps}
-            {...getProps({ isCurrent, isPartiallyCurrent, href, location })}
+            {...typeof getProps === 'function' &&
+              getProps({ isCurrent, isPartiallyCurrent, href, location })}
             href={href}
             onClick={event => {
               if (anchorProps.onClick) anchorProps.onClick(event)
@@ -453,14 +414,12 @@ export {
   createHistory,
   createMemorySource,
   globalHistory,
-  isRedirect,
   Link,
   Location,
   LocationProvider,
   Match,
   navigate,
   Redirect,
-  redirectTo,
   Router,
   ServerLocation
 }
