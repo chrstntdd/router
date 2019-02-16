@@ -26,7 +26,6 @@
     "build": "microbundle -f es,cjs --no-compress --external react",
     "use": "parcel serve usage/index.html -d example",
     "start": "concurrently -k -p '[{name}]' -n 'RouterLibrary,ExampleUsage' -c 'green.bold,cyan.bold' 'yarn build -w' 'yarn use'",
-    "use-prod": "./node_modules/.bin/webpack -p --color ---config webpack.config.ts",
     "prettier": "./node_modules/.bin/prettier '{src,dist}/**/*.{ts,tsx,js,mjs,mdx}' --write",
     "coveralls": "cat ./coverage/lcov.info | node node_modules/.bin/coveralls",
     "pub-check": "rm -rf dist && yarn build && yarn prettier && npm pack --dry"
@@ -44,16 +43,16 @@
     ]
   },
   "peerDependencies": {
-    "react": "^16.8.0-alpha.1",
-    "react-dom": "^16.8.0-alpha.1"
+    "react": "^16.8.2",
+    "react-dom": "^16.8.2"
   },
   "devDependencies": {
     "@babel/core": "^7.2.2",
     "@babel/preset-env": "^7.3.1",
     "@babel/preset-react": "^7.0.0",
     "@babel/preset-typescript": "^7.1.0",
-    "@types/jest": "^23.3.12",
-    "@types/node": "^10.12.18",
+    "@types/jest": "^24.0.5",
+    "@types/node": "^11.9.4",
     "@types/react": "^16.7.21",
     "@types/react-dom": "^16.0.11",
     "babel-jest": "^24.0.0",
@@ -71,8 +70,8 @@
     "postcss-modules": "^1.4.1",
     "prettier": "^1.15.3",
     "prop-types": "^15.6.2",
-    "react": "^16.8.0-alpha.1",
-    "react-dom": "^16.8.0-alpha.1",
+    "react": "^16.8.2",
+    "react-dom": "^16.8.2",
     "react-testing-library": "^5.4.4",
     "style-loader": "^0.23.1",
     "tslint": "^5.12.1",
