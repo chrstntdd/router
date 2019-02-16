@@ -25,6 +25,9 @@ interface RouterProps {
   component?: React.ReactElement<any>
   location?: HistoryLocation
   primary?: boolean
+  children: React.ReactElement<
+    { default?: never; path: string } | { default: boolean; path?: never }
+  >[]
 }
 
 /**

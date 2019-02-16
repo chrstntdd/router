@@ -10,7 +10,7 @@ const prefix = '🔥'
  *  - Throw an error if the condition fails
  *  - Strip out error messages for production
  */
-const invariant = (condition: any, message?: string): void => {
+const invariant = (condition: any, message?: string) => {
   if (condition) return
 
   if (isProduction) {
@@ -20,15 +20,14 @@ const invariant = (condition: any, message?: string): void => {
   throw new Error(`${prefix}: ${message || ''}`)
 }
 
-const startsWith = (input: string, search: string): boolean =>
-  input.substr(0, search.length) == search
+const startsWith = (input: string, search: string) => input.substr(0, search.length) == search
 
 const shouldNavigate = (event: React.MouseEvent<HTMLElement>) =>
   !event.defaultPrevented &&
   event.button == 0 &&
   !(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey)
 
-const stripSlashes = (str: string): string => str.replace(/(^\/+|\/+$)/g, '')
+const stripSlashes = (str: string) => str.replace(/(^\/+|\/+$)/g, '')
 
 type RouteElement = {
   uri: string
@@ -142,7 +141,6 @@ const pick = (routes: Route[], uri: string): ReturnRoute | null => {
 }
 
 /**
- *
  * @description Matches just one path to a uri
  */
 const match = (path: string, uri: string) => pick([{ path }], uri)

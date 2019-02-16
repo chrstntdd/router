@@ -40,33 +40,37 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = React.useState(false)
 
   return (
-    <main className={S.main}>
-      <React.Suspense fallback={<Loading />}>
-        <button
-          className={S.mountRouterButton}
-          onClick={_ => !routerIsMounted && setRouterIsMounted(true)}
-        >
-          Mount main router
-        </button>
-        <button className={S.mountRouterButton} onClick={_ => setIsAuthenticated(!isAuthenticated)}>
-          Become {isAuthenticated ? 'a normie' : 'a part of the elite 1%'}
-        </button>
-        {routerIsMounted && (
-          <div className={S.routerContainer}>
-            <Router>
-              <Home path="/" />
-              <Dashboard path="/dashboard" />
-              <AuthenticatedPage path="/secret" isAuthenticated={isAuthenticated} />
-              <FallbackRoute default />
-            </Router>
-          </div>
-        )}
-      </React.Suspense>
-    </main>
+    <React.unstable_ConcurrentMode>
+      <main className={S.main}>
+        <React.Suspense fallback={<Loading />}>
+          <button
+            className={S.mountRouterButton}
+            onClick={_ => !routerIsMounted && setRouterIsMounted(true)}
+          >
+            Mount main router
+          </button>
+          <button
+            className={S.mountRouterButton}
+            onClick={_ => setIsAuthenticated(!isAuthenticated)}
+          >
+            Become {isAuthenticated ? 'a normie' : 'a part of the elite 1%'}
+          </button>
+          {routerIsMounted && (
+            <div className={S.routerContainer}>
+              <Router>
+                <Home path="/" />
+                <Dashboard path="/dashboard" />
+                <AuthenticatedPage path="/secret" isAuthenticated={isAuthenticated} />
+                <FallbackRoute default />
+              </Router>
+            </div>
+          )}
+        </React.Suspense>
+      </main>
+    </React.unstable_ConcurrentMode>
   )
 }
 
 const root = document.getElementById('🤔')
 
-ReactDOM.createRoot(root).render(<App />)
-// ReactDOM.render(<App />, root)
+ReactDOM.unstable_createRoot(root).render(<App />)
