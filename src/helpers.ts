@@ -3,6 +3,7 @@ import * as React from 'react'
 import { ParamsObj, HistoryLocation, NavigateFn } from './types'
 
 const isProduction = process.env.NODE_ENV == 'production'
+const __DEV__ = process.env.NODE_ENV == 'development'
 const prefix = '🔥'
 
 /**
@@ -293,5 +294,6 @@ export {
   shouldNavigate,
   startsWith,
   stripSlashes,
-  validateRedirect
+  validateRedirect,
+  __DEV__
 }

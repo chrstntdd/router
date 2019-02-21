@@ -11,17 +11,16 @@ import {
   shouldNavigate,
   startsWith,
   stripSlashes,
-  validateRedirect
+  validateRedirect,
+  __DEV__
 } from './helpers'
 import { NavigateFn, NavigateOptions, HistoryLocation, ParamsObj, History } from './types'
 import { createHistory, createMemorySource, globalHistory, navigate } from './history'
 
 // Sets baseuri and basepath for nested routers and links
-const BaseContext = React.createContext({ baseuri: '/', basepath: '/' })
 
 interface RouterProps {
-  basepath?: string
-  baseuri?: string
+  history?: History
   component?: React.ReactElement<any>
   location?: HistoryLocation
   primary?: boolean
@@ -30,35 +29,53 @@ interface RouterProps {
   >[]
 }
 
+const useParams = () => {
+  const location = React.useContext(LocationContext)
+
+  return location
+}
+
 /**
  * @description Main Router component that connects the matched Component to
  * the contexts.
  */
-const Router: React.FC<RouterProps> = props => {
-  const baseContext = React.useContext(BaseContext)
+const Router: React.FC<RouterProps> = ({ children, history = globalHistory }) => {
+  const unmounted = React.useRef(null)
+  const listener = React.useRef(null)
 
-  return (
-    <Location>
-      {locationContext => <RouterImpl {...baseContext} {...locationContext} {...props} />}
-    </Location>
-  )
-}
+  const getContext = () => ({
+    navigate: history.navigate,
+    location: history.location
+  })
 
-type RouterImplProps = RouterProps & { navigate: NavigateFn }
+  const [locationState, setLocationState] = React.useState(() => getContext())
 
-const RouterImpl: React.FC<RouterImplProps> = ({
-  basepath,
-  baseuri,
-  children,
-  component,
-  location,
-  navigate,
-  primary = true,
-  ...domProps
-}) => {
-  const routes = React.Children.map(children, createRoute(basepath))
+  React.useEffect(() => {
+    listener.current = history.listen(() => {
+      Promise.resolve().then(() => {
+        requestAnimationFrame(() => {
+          if (!unmounted.current) {
+            setLocationState(getContext())
+          }
+        })
+      })
+    })
 
-  const match = pick(routes, location.pathname)
+    // unlisten & cleanup
+    return () => {
+      unmounted.current = true
+      listener.current()
+    }
+  }, [])
+
+  // Called to complete a route transition
+  React.useEffect(() => {
+    history.onTransitionComplete()
+  }, [locationState.location.pathname])
+
+  const routes = React.Children.map(children, createRoute())
+
+  const match = pick(routes, locationState.location.pathname)
 
   if (match) {
     const {
@@ -68,32 +85,12 @@ const RouterImpl: React.FC<RouterImplProps> = ({
       route: { value: element }
     } = match
 
-    // remove the /* from the end for child routes relative paths
-    basepath = route.default ? basepath : route.path.replace(/\*$/, '')
-
-    const props = {
-      ...params,
-      uri,
-      location,
-      navigate: (to: string, options: NavigateOptions<any>) => navigate(resolve(to, uri), options)
-    }
-
-    const clone = React.cloneElement(
-      element,
-      props,
-      element.props.children ? (
-        <Router primary={primary}>{element.props.children}</Router>
-      ) : (
-        undefined
-      )
-    )
-
     return (
-      <BaseContext.Provider value={{ basepath, baseuri: uri }}>
-        <FocusHandler uri={uri} location={location} component={component} {...domProps}>
-          {clone}
+      <LocationContext.Provider value={locationState}>
+        <FocusHandler uri={uri} location={location}>
+          {element}
         </FocusHandler>
-      </BaseContext.Provider>
+      </LocationContext.Provider>
     )
   }
 
@@ -103,7 +100,7 @@ const RouterImpl: React.FC<RouterImplProps> = ({
 const FocusContext = React.createContext((el: HTMLElement) => {})
 
 interface FocusHandlerProps {
-  component: React.ReactElement<any>
+  component?: React.ReactElement<any>
   location: HistoryLocation
   uri: string
 }
@@ -182,104 +179,8 @@ const FocusHandlerImpl: React.FC<FocusHandlerImplProps> = ({
   )
 }
 
-interface MatchProps {
-  path: string
-  children: (props: MatchChildrenProps) => React.ReactElement<any>
-}
-
-interface MatchChildrenProps {
-  navigate: NavigateFn
-  location: HistoryLocation
-  match: ParamsObj
-}
-
-const Match: React.FC<MatchProps> = ({ path, children }) => {
-  const { baseuri } = React.useContext(BaseContext)
-
-  return (
-    <Location>
-      {({ navigate, location }) => {
-        const resolvedPath = resolve(path, baseuri)
-        const result = match(resolvedPath, location.pathname)
-
-        return children({
-          navigate,
-          location,
-          match: result
-            ? {
-                ...result.params,
-                path,
-                uri: result.uri
-              }
-            : null
-        })
-      }}
-    </Location>
-  )
-}
-
 // @ts-ignore
 const LocationContext = React.createContext()
-
-/**
- * @description
- * Sets up a listener if there isn't one already so apps don't need to be
- * wrapped a top level provider
- */
-const Location = ({ children }) => {
-  const locationContext = React.useContext(LocationContext)
-
-  return locationContext ? (
-    children(locationContext)
-  ) : (
-    <LocationProvider>{children}</LocationProvider>
-  )
-}
-
-interface LocationProviderProps {
-  history?: History
-}
-
-const LocationProvider: React.FC<LocationProviderProps> = ({ history, children }) => {
-  const unmounted = React.useRef(null)
-  const listener = React.useRef(null)
-
-  history = history || globalHistory
-
-  const getContext = () => ({
-    navigate: history.navigate,
-    location: history.location
-  })
-
-  const [locationState, setLocationState] = React.useState(() => getContext())
-
-  React.useEffect(() => {
-    listener.current = history.listen(() => {
-      Promise.resolve().then(() => {
-        requestAnimationFrame(() => {
-          if (!unmounted.current) setLocationState(getContext())
-        })
-      })
-    })
-
-    // unlisten & cleanup
-    return () => {
-      unmounted.current = true
-      listener.current()
-    }
-  }, [])
-
-  // Called to complete a route transition
-  React.useEffect(() => {
-    history.onTransitionComplete()
-  }, [locationState.location])
-
-  return (
-    <LocationContext.Provider value={locationState}>
-      {typeof children == 'function' ? children(locationState) : children || null}
-    </LocationContext.Provider>
-  )
-}
 
 /**
  * @description When you render a <Redirect/> a redirect request is thrown,
@@ -308,12 +209,12 @@ interface RedirectProps {
   to: string
 }
 
-const Redirect: React.FC<RedirectProps> = ({ to, from, state, replace = true, ...props }) => {
+const Redirect: React.FC<RedirectProps> = ({ to, from, replace = true, ...props }) => {
   const { navigate } = React.useContext(LocationContext)
 
   React.useEffect(() => {
     Promise.resolve().then(() => {
-      navigate(insertParams(to, props), { replace, state })
+      navigate(insertParams(to, props), { replace })
     })
   }, [])
 
@@ -323,60 +224,59 @@ const Redirect: React.FC<RedirectProps> = ({ to, from, state, replace = true, ..
 interface LinkPropGetter {
   isCurrent: boolean
   isPartiallyCurrent: boolean
-  href: string
   location: any
 }
 
 interface LinkProps {
   to: string
-  state?: any
-  replace?: () => any
+  replace?: boolean
   /* To support hooking into location data for applying your own props */
   getProps?: (props: LinkPropGetter) => void
 }
 
 const Link: React.FC<LinkProps & React.HTMLProps<HTMLAnchorElement>> = props => {
-  const { baseuri } = React.useContext(BaseContext)
   const linkRef = React.useRef(null)
+  const { location } = React.useContext(LocationContext)
+
+  const { to, replace, getProps, ...anchorProps } = props
+  const isCurrent = location.pathname == to
+
+  const handleClick = React.useCallback(
+    event => {
+      if (anchorProps.onClick) anchorProps.onClick(event)
+      if (isCurrent) {
+        event.preventDefault()
+        return
+      }
+      if (shouldNavigate(event)) {
+        event.preventDefault()
+        navigate(to, { replace })
+      }
+    },
+    [location.pathname, to]
+  )
 
   return (
-    <Location>
-      {({ location, navigate }) => {
-        const { to, state, replace, getProps, ...anchorProps } = props
-        const href = resolve(to, baseuri)
-        const isCurrent = location.pathname == href
-        const isPartiallyCurrent = startsWith(location.pathname, href)
-
-        return (
-          <a
-            ref={linkRef}
-            aria-current={isCurrent ? 'page' : undefined}
-            {...anchorProps}
-            {...typeof getProps == 'function' &&
-              getProps({ isCurrent, isPartiallyCurrent, href, location })}
-            href={href}
-            onClick={event => {
-              if (anchorProps.onClick) anchorProps.onClick(event)
-              if (isCurrent) {
-                event.preventDefault()
-                return
-              }
-              if (shouldNavigate(event)) {
-                event.preventDefault()
-                navigate(href, { state, replace })
-              }
-            }}
-          />
-        )
-      }}
-    </Location>
+    <a
+      ref={linkRef}
+      aria-current={isCurrent ? 'page' : undefined}
+      {...anchorProps}
+      {...typeof getProps == 'function' &&
+        getProps({
+          isCurrent,
+          isPartiallyCurrent: startsWith(location.pathname, to),
+          location
+        })}
+      href={to}
+      onClick={handleClick}
+    />
   )
 }
 
-const createRoute = (basepath: string) => (element: React.ReactElement<any>): Route | null => {
+const createRoute = (basepath = '/') => (element: React.ReactElement<any>): Route | null => {
   if (!element) return null
 
-  if (!isProduction) {
+  if (__DEV__) {
     invariant(
       element.props.path || element.props.default || element.type == Redirect,
       `<Router>: Children of <Router> must have a \`path\` or \`default\` prop, or be a \`<Redirect>\`. None found on element type \`${
@@ -418,9 +318,6 @@ export {
   createMemorySource,
   globalHistory,
   Link,
-  Location,
-  LocationProvider,
-  Match,
   navigate,
   Redirect,
   Router,
