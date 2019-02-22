@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-import { Link } from '../dist'
+import { Link } from '../dist/index'
 
 function MainNav() {
   return (

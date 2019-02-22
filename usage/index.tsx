@@ -1,7 +1,7 @@
-import * as React from 'react'
-import * as ReactDOM from 'react-dom'
+import React from 'react'
+import ReactDOM from 'react-dom'
 
-import { Router, Link, Redirect } from '../dist'
+import { Router, Link, Redirect } from '../dist/index'
 
 import * as S from './styles.css'
 
@@ -21,8 +21,8 @@ function FallbackRoute() {
   )
 }
 
-const Home = React.lazy(() => import('./Home'))
-const Dashboard = React.lazy(() => import('./Dashboard'))
+const Home = React.lazy(() => import(/* webpackChunkName: "home" */ './Home'))
+const Dashboard = React.lazy(() => import(/* webpackChunkName: "dashboard" */ './Dashboard'))
 
 const AuthenticatedPage = ({ isAuthenticated }) => {
   return isAuthenticated ? (

@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "lib": ["dom", "esnext"],
+    "module": "commonjs",
+    "removeComments": false,
+    "target": "esnext",
+    "typeRoots": ["../node_modules/@types"]
+  },
+  "exclude": ["node_modules/**/*", "src/**/*"],
+  "include": ["./**/*.ts", "./**/*.tsx", "usage/**/*.tsx"]
+}

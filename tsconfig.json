@@ -1,20 +1,25 @@
 {
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
-    "baseUrl": ".",
     "declaration": true,
+    "baseUrl": ".",
     "esModuleInterop": true,
     "jsx": "react",
     "lib": ["dom", "esnext"],
-    "outDir": "dist/",
-    "removeComments": true,
+    "moduleResolution": "node",
+    "module": "esnext", // esnext for code splitting
+    "removeComments": false,
     "pretty": true,
-    "paths": {
-      "router/*": ["dist/*"]
-    },
     "target": "es5",
     "typeRoots": ["./node_modules/@types"]
   },
   "exclude": ["node_modules/**/*", "src/**/*.spec.*"],
-  "include": ["src/**/*.ts", "src/**/*.tsx", "usage/**/*.tsx", "usage/**/*.ts"]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "usage/**/*.tsx",
+    "usage/**/*.ts",
+    "dist/**/*",
+    "webpack.config.ts"
+  ]
 }
