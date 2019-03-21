@@ -2,53 +2,43 @@
 
 exports[`sus-router smoke renders at a path 1`] = `
 <div
-  role="group"
-  tabindex="-1"
+  data-testid="dashboard-page"
 >
-  <div
-    data-testid="dashboard-page"
+  Dash
+  <br />
+  <br />
+  <a
+    aria-current="page"
+    href="/dash"
   >
-    Dash
-    <br />
-    <br />
-    <a
-      aria-current="page"
-      href="/dash"
-    >
-      Current page
-    </a>
-    <a
-      data-testid="home-anchor"
-      href="/"
-    >
-      Home
-    </a>
-  </div>
+    Current page
+  </a>
+  <a
+    data-testid="home-anchor"
+    href="/"
+  >
+    Home
+  </a>
 </div>
 `;
 
 exports[`sus-router smoke renders the root component at "/" 1`] = `
 <div
-  role="group"
-  tabindex="-1"
+  data-testid="home-page"
 >
-  <div
-    data-testid="home-page"
+  Home
+  <br />
+  <a
+    aria-current="page"
+    href="/"
   >
-    Home
-    <br />
-    <a
-      aria-current="page"
-      href="/"
-    >
-      Current page
-    </a>
-    <a
-      data-testid="dash-anchor"
-      href="/dash"
-    >
-      dash
-    </a>
-  </div>
+    Current page
+  </a>
+  <a
+    data-testid="dash-anchor"
+    href="/dash"
+  >
+    dash
+  </a>
 </div>
 `;

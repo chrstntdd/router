@@ -57,8 +57,8 @@ interface ReturnRoute {
  * `static > dynamic > wildcard > root`
  */
 const pick = (routes: Route[], uri: string): ReturnRoute | null => {
-  let match
-  let _default
+  let match: ReturnRoute
+  let _default: ReturnRoute
 
   const [uriPathname] = uri.split('?')
   const uriSegments = segmentize(uriPathname)
@@ -146,7 +146,7 @@ const pick = (routes: Route[], uri: string): ReturnRoute | null => {
  */
 const match = (path: string, uri: string) => pick([{ path }], uri)
 
-/***
+/**
  * @description Resolves URIs as though every path is a directory, no files.
  * Relative URIs in the browser can feel awkward because not only can you be
  * "in a directory" you can be "at a file", too. For example

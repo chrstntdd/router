@@ -51,10 +51,8 @@ const createHistory = (source: Window | HistorySource) => {
       // try...catch iOS Safari limits to 100 pushState calls
       try {
         if (transitioning || replace) {
-          // @ts-ignore not updating the title of the page
           source.history.replaceState(state, null, to)
         } else {
-          // @ts-ignore not updating the title of the page
           source.history.pushState(state, null, to)
         }
       } catch (e) {

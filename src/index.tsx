@@ -3,10 +3,7 @@ import * as React from 'react'
 import {
   insertParams,
   invariant,
-  isProduction,
-  match,
   pick,
-  resolve,
   Route,
   shouldNavigate,
   startsWith,
@@ -14,7 +11,7 @@ import {
   validateRedirect,
   __DEV__
 } from './helpers'
-import { NavigateFn, NavigateOptions, HistoryLocation, ParamsObj, History } from './types'
+import { History, HistoryLocation, NavigateFn } from './types'
 import { createHistory, createMemorySource, globalHistory, navigate } from './history'
 
 // Sets baseuri and basepath for nested routers and links
@@ -22,17 +19,10 @@ import { createHistory, createMemorySource, globalHistory, navigate } from './hi
 interface RouterProps {
   history?: History
   component?: React.ReactElement<any>
-  location?: HistoryLocation
   primary?: boolean
   children: React.ReactElement<
     { default?: never; path: string } | { default: boolean; path?: never }
   >[]
-}
-
-const useParams = () => {
-  const location = React.useContext(LocationContext)
-
-  return location
 }
 
 /**
@@ -52,13 +42,9 @@ const Router: React.FC<RouterProps> = ({ children, history = globalHistory }) =>
 
   React.useEffect(() => {
     listener.current = history.listen(() => {
-      Promise.resolve().then(() => {
-        requestAnimationFrame(() => {
-          if (!unmounted.current) {
-            setLocationState(getContext())
-          }
-        })
-      })
+      if (!unmounted.current) {
+        setLocationState(getContext())
+      }
     })
 
     // unlisten & cleanup
@@ -79,108 +65,24 @@ const Router: React.FC<RouterProps> = ({ children, history = globalHistory }) =>
 
   if (match) {
     const {
-      params,
-      uri,
-      route,
       route: { value: element }
     } = match
 
-    return (
-      <LocationContext.Provider value={locationState}>
-        <FocusHandler uri={uri} location={location}>
-          {element}
-        </FocusHandler>
-      </LocationContext.Provider>
-    )
+    return <LocationContext.Provider value={locationState}>{element}</LocationContext.Provider>
   }
 
   return null
 }
 
-const FocusContext = React.createContext((el: HTMLElement) => {})
-
-interface FocusHandlerProps {
-  component?: React.ReactElement<any>
-  location: HistoryLocation
-  uri: string
+type ContextValue = {
+  location: HistoryLocation | { pathname: string }
+  navigate: NavigateFn
 }
 
-const FocusHandler: React.FC<FocusHandlerProps> = ({ uri, location, component, ...domProps }) => {
-  const requestFocus = React.useContext<(el: HTMLElement) => void>(FocusContext)
-
-  return (
-    <FocusHandlerImpl
-      {...domProps}
-      component={component}
-      requestFocus={requestFocus}
-      uri={uri}
-      location={location}
-    />
-  )
-}
-
-type FocusHandlerImplProps = {
-  role?: string
-  requestFocus: (el: HTMLElement) => void
-} & FocusHandlerProps
-
-// don't focus on initial render
-let initialRender = true
-let focusHandlerCount = 0
-
-const FocusHandlerImpl: React.FC<FocusHandlerImplProps> = ({
-  children,
-  component,
-  location,
-  requestFocus,
-  role = 'group',
-  uri,
-  ...domProps
-}) => {
-  const [shouldFocus, setShouldFocus] = React.useState(() => true)
-  const compEl = React.useRef(null)
-
-  // cDM && cWU
-  React.useEffect(() => {
-    focus()
-    focusHandlerCount++
-    setShouldFocus(true)
-
-    return () => {
-      focusHandlerCount--
-      if (focusHandlerCount == 0) initialRender = true
-    }
-  }, [])
-
-  // cDU
-  React.useEffect(() => {
-    shouldFocus && focus()
-  }, [location])
-
-  const focus = React.useCallback(() => {
-    requestFocus
-      ? requestFocus(compEl.current)
-      : initialRender
-      ? (initialRender = false)
-      : !compEl.current.contains(document.activeElement) && compEl.current.focus()
-  }, [requestFocus])
-
-  const internalRequestFocus = React.useCallback(
-    node => {
-      !shouldFocus && node.focus()
-    },
-    [shouldFocus]
-  )
-
-  return (
-    <div ref={compEl} role={role} tabIndex={-1} {...domProps}>
-      <FocusContext.Provider value={internalRequestFocus}>{children}</FocusContext.Provider>
-    </div>
-  )
-}
-
-// @ts-ignore
-const LocationContext = React.createContext()
+const LocationContext = React.createContext<ContextValue>({
+  location: globalHistory.location,
+  navigate: globalHistory.navigate
+})
 
 /**
  * @description When you render a <Redirect/> a redirect request is thrown,
