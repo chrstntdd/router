@@ -2,10 +2,6 @@ import * as React from 'react'
 
 import { ParamsObj, HistoryLocation, NavigateFn } from './types'
 
-const isProduction = process.env.NODE_ENV == 'production'
-const __DEV__ = process.env.NODE_ENV == 'development'
-const prefix = '🔥'
-
 /**
  * @description
  *  - Throw an error if the condition fails
@@ -14,11 +10,11 @@ const prefix = '🔥'
 const invariant = (condition: any, message?: string) => {
   if (condition) return
 
-  if (isProduction) {
-    throw new Error(prefix)
+  if (process.env.NODE_ENV == 'production') {
+    throw new Error('🔥')
   }
 
-  throw new Error(`${prefix}: ${message || ''}`)
+  throw new Error(`🔥: ${message || ''}`)
 }
 
 const startsWith = (input: string, search: string) => input.substr(0, search.length) == search
@@ -287,13 +283,11 @@ const reservedNames = ['uri', 'path']
 export {
   insertParams,
   invariant,
-  isProduction,
   match,
   pick,
   resolve,
   shouldNavigate,
   startsWith,
   stripSlashes,
-  validateRedirect,
-  __DEV__
+  validateRedirect
 }
