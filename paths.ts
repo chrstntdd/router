@@ -4,7 +4,8 @@ import { realpathSync } from 'fs'
 const appDirectory = realpathSync(process.cwd())
 const resolveApp = relativePath => resolve(appDirectory, relativePath)
 
-export const exampleOutDir = resolveApp('example')
+export const exampleOutDirClient = resolveApp('example/client')
+export const exampleOutDirServer = resolveApp('example/server')
 export const exampleSource = resolveApp('usage')
 export const exampleEntry = resolveApp('usage/index.tsx')
 export const libOutDir = resolveApp('dist')

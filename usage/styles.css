@@ -33,7 +33,7 @@ a {
   min-height: 50%;
 }
 
-:global .page-container {
+.page-container {
   min-height: 20rem;
   display: flex;
   flex-direction: column;
@@ -41,7 +41,7 @@ a {
   align-items: center;
 }
 
-:global .page-container h1 {
+.page-container h1 {
   letter-spacing: 0.1rem;
   text-align: center;
 }

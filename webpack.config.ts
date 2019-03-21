@@ -7,11 +7,40 @@ import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import CleanWebpackPlugin from 'clean-webpack-plugin'
 import Stylish from 'webpack-stylish'
 import InlineChunkHtmlPlugin from 'react-dev-utils/InlineChunkHtmlPlugin'
+import ManifestPlugin from 'webpack-manifest-plugin'
+import nodeExternals from 'webpack-node-externals'
+
+import babelConfig from './.babelrc.js'
+import pkg from './package.json'
 
 const IS_PRODUCTION = process.env.NODE_ENV === 'production'
 const IS_DEVELOPMENT = process.env.NODE_ENV === 'development'
+const IS_SSR = process.env.SSR
 
-import { exampleOutDir, exampleEntry } from './paths'
+import { exampleOutDirClient, exampleOutDirServer, exampleEntry } from './paths'
+
+const makeBabelConfig = shouldUseModernJS => {
+  const targets = shouldUseModernJS ? { esmodules: true } : { browsers: pkg.browserslist }
+
+  return {
+    babelrc: false,
+    env: babelConfig.env,
+    plugins: babelConfig.plugins,
+    presets: [
+      '@babel/react',
+      [
+        '@babel/env',
+        {
+          modules: false,
+          shippedProposals: true,
+          useBuiltIns: 'usage',
+          loose: true,
+          targets
+        }
+      ]
+    ]
+  }
+}
 
 const publicPath = '/'
 
@@ -27,7 +56,7 @@ const mainConfig: webpack.Configuration = {
   entry: exampleEntry,
 
   output: {
-    path: IS_PRODUCTION ? exampleOutDir : undefined,
+    // path: IS_PRODUCTION ? exampleOutDirClient : undefined,
     pathinfo: IS_DEVELOPMENT,
     filename: 'static/js/[name].[hash:8].js',
     chunkFilename: 'static/js/[name].[chunkhash:8].chunk.js',
@@ -63,6 +92,7 @@ const mainConfig: webpack.Configuration = {
         cache: true,
         sourceMap: true
       }),
+
       new OptimizeCSSAssetsPlugin({
         cssProcessorOptions: {
           map: {
@@ -73,7 +103,7 @@ const mainConfig: webpack.Configuration = {
       })
     ],
     splitChunks: { chunks: 'all' },
-    runtimeChunk: true
+    runtimeChunk: !IS_SSR
   },
 
   resolve: {
@@ -108,19 +138,28 @@ const mainConfig: webpack.Configuration = {
           {
             test: /\.tsx?$/,
             exclude: /node_modules/,
-            loader: 'ts-loader',
-            options: { transpileOnly: true }
+            use: [
+              {
+                loader: 'babel-loader',
+                options: {
+                  ...makeBabelConfig(true),
+                  presets: babelConfig.presets.filter(p => p !== '@babel/typescript')
+                }
+              },
+
+              {
+                loader: 'ts-loader',
+                options: {
+                  transpileOnly: true,
+                  configFile: IS_SSR ? 'tsconfig.json' : 'tsconfig.client.json'
+                }
+              }
+            ]
           },
 
           {
             test: /\.(sa|sc|c)ss$/,
-            use: [
-              IS_PRODUCTION ? MiniCssExtractPlugin.loader : 'style-loader',
-              {
-                loader: 'css-loader',
-                options: { modules: true }
-              }
-            ]
+            use: [IS_PRODUCTION ? MiniCssExtractPlugin.loader : 'style-loader', 'css-loader']
           },
           // "file" loader makes sure those assets get served by WebpackDevServer.
           // When you `import` an asset, you get its (virtual) filename.
@@ -175,7 +214,9 @@ const mainConfig: webpack.Configuration = {
 
     IS_PRODUCTION && new InlineChunkHtmlPlugin(HtmlWebpackPlugin, [/runtime~.+[.]js/]),
 
-    new Stylish(),
+    IS_DEVELOPMENT && new Stylish(),
+
+    new CleanWebpackPlugin(),
 
     IS_PRODUCTION &&
       new MiniCssExtractPlugin({
@@ -185,7 +226,7 @@ const mainConfig: webpack.Configuration = {
 
     IS_DEVELOPMENT && new webpack.HotModuleReplacementPlugin(),
 
-    new CleanWebpackPlugin([exampleOutDir])
+    IS_PRODUCTION && new ManifestPlugin()
   ].filter(Boolean),
 
   node: {
@@ -199,4 +240,62 @@ const mainConfig: webpack.Configuration = {
   performance: false
 }
 
-export default mainConfig
+export const enum Target {
+  Client,
+  Server
+}
+
+export const enum Environment {
+  Development,
+  Production
+}
+
+function pp(obj) {
+  return JSON.stringify(obj, null, 2)
+}
+
+export default (
+  target = Target.Client,
+  environment = Environment.Development
+): webpack.Configuration => {
+  if (target === Target.Client) {
+    return {
+      ...mainConfig,
+      output: {
+        ...mainConfig.output,
+        path: exampleOutDirClient
+      }
+    }
+  }
+
+  if (target === Target.Server) {
+    return {
+      ...mainConfig,
+      node: {
+        // We want to uphold node's __filename, and __dirname.
+        __console: false,
+        __dirname: false,
+        __filename: false
+      },
+      externals: [
+        nodeExternals({
+          whitelist: [
+            IS_DEVELOPMENT ? 'webpack/hot/poll?300' : null,
+            /\.(eot|woff|woff2|ttf|otf)$/,
+            /\.(svg|png|jpg|jpeg|gif|ico)$/,
+            /\.(mp4|mp3|ogg|swf|webp)$/,
+            /\.(css|scss|sass|less)$/
+          ].filter(x => x)
+        })
+      ],
+      output: {
+        publicPath,
+        path: exampleOutDirServer,
+        filename: 'server.js',
+        libraryTarget: 'commonjs2'
+      }
+    }
+  }
+
+  return mainConfig
+}

@@ -2,9 +2,12 @@
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
+    "jsx": "react",
     "lib": ["dom", "esnext"],
     "module": "commonjs",
+    "preserveConstEnums": true,
     "removeComments": false,
+    "resolveJsonModule": true,
     "target": "esnext",
     "typeRoots": ["../node_modules/@types"]
   },

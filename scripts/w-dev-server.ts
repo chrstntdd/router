@@ -2,7 +2,7 @@ import errorOverlayMiddleware from 'react-dev-utils/errorOverlayMiddleware'
 import evalSourceMapMiddleware from 'react-dev-utils/evalSourceMapMiddleware'
 import ignoredFiles from 'react-dev-utils/ignoredFiles'
 
-import { exampleOutDir, exampleSource } from '../paths'
+import { exampleOutDirClient, exampleSource } from '../paths'
 
 const protocol = process.env.HTTPS === 'true' ? 'https' : 'http'
 const host = process.env.HOST || '0.0.0.0'
@@ -12,7 +12,7 @@ export default function createWebpackDevServerConfig(proxy, allowedHost) {
     disableHostCheck: !proxy || process.env.DANGEROUSLY_DISABLE_HOST_CHECK === 'true',
     compress: true,
     clientLogLevel: 'none',
-    contentBase: exampleOutDir,
+    contentBase: exampleOutDirClient,
     watchContentBase: true,
     hot: true,
     publicPath: '/',

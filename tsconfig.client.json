@@ -7,10 +7,10 @@
     "jsx": "react",
     "lib": ["dom", "esnext"],
     "moduleResolution": "node",
+    "module": "esnext", // esnext for code splitting
     "removeComments": false,
-    "resolveJsonModule": true,
     "pretty": true,
-    "target": "esnext",
+    "target": "es5",
     "typeRoots": ["./node_modules/@types"]
   },
   "exclude": ["node_modules/**/*", "src/**/*.spec.*"],

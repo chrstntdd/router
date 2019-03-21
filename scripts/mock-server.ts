@@ -1,9 +1,11 @@
+import fs from 'fs'
 import express from 'express'
 import bodyParser from 'body-parser'
 import compression from 'compression'
 import morgan from 'morgan'
 
-import { exampleOutDir } from '../paths'
+import { exampleOutDirClient } from '../paths'
+import { streamRenderer } from '../usage/ssr'
 
 const app = express()
 
@@ -22,13 +24,20 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use(morgan('dev'))
 
 const PORT = process.env.PORT || 3000
+const SSR = process.env.SSR
 const env = app.get('env')
 
-app.use(express.static(exampleOutDir))
+app.use(express.static(exampleOutDirClient, SSR ? { index: false } : undefined))
 
-app.get('*', (req, res) => {
-  res.sendFile(exampleOutDir + '/index.html')
-})
+app.get(
+  '*',
+  SSR
+    ? streamRenderer
+    : (req, res) => {
+        const src = fs.createReadStream(exampleOutDirClient + '/index.html')
+        src.pipe(res)
+      }
+)
 
 let server
 

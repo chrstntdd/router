@@ -5,8 +5,8 @@ import { MainNav } from './MainNav'
 function Home() {
   return (
     <div className="page-container">
-      <h1>Home</h1>
       <MainNav />
+      <h1>Home</h1>
     </div>
   )
 }
